@@ -1,0 +1,5 @@
+#achivo de maestro de errores para grabar el log
+#Structura
+#Numero(###),Texto
+101,No puede escribir en el archivo: 
+104,Falta algo
