@@ -7,9 +7,7 @@
 # de Nikolaus Schneider para el trabajo practico
 # de la MAteria Sistemas Operativos
 #
-# last change: 2011-09-25
-
-echo Vamos!
+# last change: 2011-10-02
 
 #Fragen
 #1 1 Log oder viele?
@@ -21,9 +19,156 @@ echo Vamos!
 #  1 - Faltan Parametros
 #  2 - No puede escribir
 #  3 - Ambiente no iniciado
+
+
+#Funcion para grabar en el log
+#Parametros
+#1 - Texto para grabar
+#2 - Nombre de archivo
+function grabarLog
+{
+  echo "$1" >> $2
+  if [ $? -ne 0 ]
+    then
+    echo No Puede escribir en el archivo $2
+    exit 2 
+  fi
+}
+
+#Funcion para examinar la exestencia de una variable
+#1 - Variable
+#2 - Texto si no existe
+function existeParametro
+{
+  if [ -z "$1" ] 
+    then
+      echo $2
+      exit 1
+  fi
+}
+
+#Funcion para examir las entradas y al final grabar el log
+function writeLog
+{
+#Hay parametro de Mensaje?
+existeParametro "$logmsg" "Falta el texto de la mensaje"
+
+#Hay parametro de nombre de programa?
+#Prüfen ob es ein gültiger Name ist? Oder egal?
+existeParametro "$logprog" "Falta el nombre de la programa"
+
+#Hay parametro de tipo de mensaje?
+existeParametro "$logtipo" "Falta tipo de mensaje"
+
+#Determinar otros datos
+
+#Usuario
+logusuario=$USER
+
+#Zeit
+#Ein Format für Zeit
+logtime=`date "+%y-%m-%d_%H-%M-%S"`
+
+#Alternativ Sekunden seit 1970, ist kürzer
+#date '+%s'
+
+#Tipo de Mensaje
+#Posibilidad a usar solo eg 'I', o con numero
+#para errores communes
+#MEldung bei ungültige rFehlernummer? Im moment nur zahlen
+logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\2/'`
+logtipo=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\1/'`
+if [ ${#logtipo2} -gt 0 ]
+  then
+  #Default Texte für Erweiterte Fehler
+  #Existe Archivo de maestro?
+  if [ \! -f "$DATAMAE/errores.mae" ]
+    then
+    echo No encuentro el maestro de errores
+  fi
+  logmsg=`sed -n "s/^\($logtipo2\),\(.*\)/\1: \2 $logmsg/p" "$DATAMAE/errores.mae"`
+fi
+
+#Parameterreihenfolge?
+
+#Datensatz schreiben
+logentry="$logtime,$logusuario,$logtipo,$logmsg"
+logfile=$LOGDIR/$logprog.$LOGEXT 
+
+#Existe Archivo de log?
+if [ \! -w $logfile ]
+  then
+  #Existe el directorio?
+  if [ \! -d $LOGDIR ]
+    then
+    mkdir $LOGDIR
+  fi
+  
+  #Grabar mensaje en log
+  lognewentry="$logtime,$logusuario,A,554:Log $logfile no existe, crear nuevo archivo de log"
+  grabarLog "$lognewentry" "$logfile"
+fi
+
+#Examinar tamano de archivo de log
+logsize=`stat -c "%s" $logfile`
+if [ $logsize -gt `expr $MAXLOGSIZE \* 1024 - ${#logentry}` ]
+  then
+  #Verfahren? 50 Prozent, oder erst info oder so löschen?
+  #Erstmal hart abschneiden
+  #50 Prozent der Linien
+  #Zeilenanzahl 
+  loglines=`grep -c '' $logfile`
+  sed -i "1,`expr $loglines \/ 2` d" $logfile
+  
+  #Nachricht irgendwo dokumentieren, andere haben ja auch filesize dinger
+  logfullentry="$logtime,$logusuario,A,555:Log excedido, había más de $MAXLOGSIZE kb, se corta"
+  grabarLog "$logfullentry" "$logfile"
+  
+  #Mensaje a stdout
+  echo "Log excedido, había más de $MAXLOGSIZE kb, se corta"
+fi
+
+#Escribir
+grabarLog "$logentry" "$logfile"
+}
+
+#funcion parar mirar los archivos de log
+function viewLog
+{
+  echo mirando
+
+  #Hay parametro de nombre de programa?
+  existeParametro "$logprog" "Falta el nombre de la programa"
+
+  #Existe Archivo de log?
+  logfile="$LOGDIR/$logprog.$LOGEXT" 
+
+  if [ \! -f $logfile ]
+    then
+    echo No encuentro el archivo $logfile
+  fi
+
+  #beim anzeigen mehr als ein typ möglich?
+  #tipo splitten
+  logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\2/'`
+  logtipo=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\1/'`
+
+  #Opcion 'ver n lineas'
+  #Gilt ja generell, also zuletzt
+  if [ -z $logviewlineas ]
+    then
+    grep  "^\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)$logtipo\([^,]*\)[,][^,]*$logtipo2" "$logfile" | grep  "^\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)$logmsg"
+else 
+    grep  "^\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)$logtipo\([^,]*\)[,][^,]*$logtipo2" "$logfile" | grep  "^\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)$logmsg" | tail -$logviewlineas
+  fi
+} #fin de viewLog
+
  
 #Umgebungsvariablen, später löschen
-$grupo='/home/havoc/tpMy'
+grupo='/home/havoc/tpMy'
+
+DATAMAE="$grupo/mae"
+
 #Ambiente iniciado?
 #Hier das tolle Programm da nutzen
 if [ -z $grupo ] 
@@ -55,111 +200,32 @@ logtime=""
 logtipo="" 
 logtipo2=""
 logusuario=""
+logmode="view"
+logviewlinieas=""
+
 
 # Parameter parsen
-echo parse
-while getopts t:p:m: option
+while getopts t:p:m:wn:s: option
 do	
 case "$option" in
-  	t)	echo Tipo de Mensaje: $OPTARG;logtipo=$OPTARG;;
-  	p)	echo Programa: $OPTARG;logprog=$OPTARG;;
-	m)	echo Text: $OPTARG;logmsg=$OPTARG;;
-	[?])	echo "Opciones posibles: t p m"
+  	t)	logtipo=$OPTARG;;
+  	p)	logprog=$OPTARG;;
+	m)	logmsg=$OPTARG;;
+	w)	logmode="write";;
+	n)	logviewlineas=$OPTARG;;
+	[?])	echo "Opciones posibles: t p m w"
 	esac
 done
 
-#Hay parametro de Mensaje?
-if [ -z "$logmsg" ] 
+#Estamos mirando o escribiendo?
+if [ $logmode = "write" ]
   then
-    echo Falta el texto de la mensaje
-    exit 1
+  writeLog
+elif [ $logmode = "view" ]
+  then
+  viewLog
 fi
 
-#Hay parametro de nombre de programa?
-#Prüfen ob es ein gültiger Name ist? Oder egal?
-if [ -z $logprog ] 
-  then
-    echo Falta nombre de programa
-    exit 1
-fi
 
-#Hay parametro de tipo de mensaje?
-if [ -z $logtipo ] 
-  then
-    echo Falta tipo de mensaje
-    exit 1
-fi
-
-#Determinar otros datos
-
-#Usuario
-logusuario=$USER
-
-#Zeit
-#Ein Format für Zeit
-logtime=`date "+%y-%m-%d_%H-%M-%S"`
-
-#Alternativ Sekunden seit 1970, ist kürzer
-#date '+%s'
-
-#Tipo de Mensaje
-#Posibilidad a usar solo eg 'I', o con numero
-#para errores communes
-#MEldung bei ungültige rFehlernummer? Im moment nur zahlen
-logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\2/'`
-logtipo=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)/\1/'`
-if [ -n $logtipo2 ]
-  then
-  echo Erweiterter Parameter: $logtipo2  
-#Default Texte für Erweiterte Fehler
-#Master Datei verwenden?
-#ODer die ganze Ersetzung nur beim LEsen des Logs machen --> Dateigröße
-  case $logtipo2 in
-    101) logmsg="$logtipo2: Datei nicht gefunden: $logmsg" ;;
-    *) logmsg="$logtipo2: Unbekannter Code: $logmsg" ;;
-  esac
-fi
-
-#Parameterreihenfolge?
-
-#Datensatz schreiben
-logentry="$logtime,$logusuario,$logtipo,$logmsg"
-#Esistiert Datei?
-logfile=$LOGDIR/$logprog$LOGEXT 
-if [ \! -w $logfile ]
-  then
-  #Existe el directorio?
-  if [ \! -d $LOGDIR ]
-    then
-    mkdir $LOGDIR
-  fi
-  #Grabar mensaje en log
-  lognewentry="$logtime,$logusuario,A,554:Log $logfile no existe, crear nuevo archivo de log"
-  echo "$lognewentry" >> $logfile
-fi
-
-#Dateigröße prüfen
-#vorher oder nachher? einfach den satz mit aufnehmen
-logsize=`stat -c "%s" $logfile`
-echo $logsize
-echo $MAXLOGSIZE
-if [ $logsize -gt `expr $MAXLOGSIZE \* 1024 - ${#logentry}` ]
-  then
-  #Verfahren? 50 Prozent, oder erst info oder so löschen?
-  #Erstmal hart abschneiden
-  #50 Prozent der Linien
-  #Zeilenanzahl 
-  loglines=`grep -c '' $logfile`
-  sed -i "1,`expr $loglines \/ 2` d" $logfile
-  #Nachricht irgendwo dokumentieren, andere haben ja auch filesize dinger
-  logfullentry="$logtime,$logusuario,A,555:Log excedido, había más de $MAXLOGSIZE kb, se corta"
-  echo "$logfullentry" >> $logfile
-  #NAchricht an Benutzer
-  echo "Log excedido, había más de $MAXLOGSIZE kb, se corta"
-fi
-
-#Schreiben
-#evtl Fehler auswertem
-echo "$logentry" >> $logfile
-
+echo Listo
 exit 0
