@@ -1,0 +1,6 @@
+#!/bin/bash
+# StopD - Detiene el daemon detectarC
+
+PID_FILE=/home/juani/Desktop/SO/detectarC.pid
+
+kill -KILL `cat $PID_FILE`
