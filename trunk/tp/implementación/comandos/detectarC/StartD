@@ -1,0 +1,5 @@
+#!/bin/bash
+# StartD - Inicia el daemon detectarC
+
+nohup ./detectarC.sh > /dev/null 2>&1 &
+
