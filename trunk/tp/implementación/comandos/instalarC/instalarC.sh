@@ -5,6 +5,11 @@
 #
 # Creado por Nicolas Suarez
 
+# Exit Codes
+# 0 - Instalacion Completa
+# 1 - Ningun componente instalado
+# 2 - Instalacion Incompleta
+
 GRUPO=`pwd`
 INSTDIR="inst"
 CONFDIR="conf"
@@ -40,6 +45,10 @@ function echoAndLog() {
 	loguear "$1" "$2"
 }
 
+#Funcion para crear directorios
+#Parametros:
+#1 - Permisos 
+#2 - Path del directorio a crear
 function crearDirectorio() {
 	if [ ! -d $2 ]; then
 		mkdir -p -m$1 $2 2>/dev/null 
@@ -67,6 +76,10 @@ function terminosCondiciones() {
 	fi
 }
 
+#Funcion que verifica si la version de perl instalada es 5 o superior
+#Return Codes:
+#	0 - La version instalada es 5 o superior
+#	1 - No esta instalado perl o la version es menor a 5
 function verificarPerl() {
 	perlVersion=`perl --version | grep -o "v[5-9]\.[0-9]\{1,\}\.[0-9]\{1,\}"`
 	if [ $? -ne 0 ]; then
@@ -273,8 +286,10 @@ function crearDirectorios() {
 	crearDirectorio 777 "$GRUPO/ya"
 }
 
-#$1 archivo a mover
-#$2 destino del archivo
+#Funcion para mover archivos
+#Parametros:
+#	1 - Archivo a mover
+#	2 - Path destino del archivo
 function moverArchivo() {
 	if [ ! -f $1 ]; then 
 		loguear "E" "No se puede mover el archivo ${1##*/}. Archivo inexistente" 
@@ -368,12 +383,11 @@ function guardarConfiguracion() {
 }
 
 
-#detectarInstalacion
-#Detecta si estan todos los componentes instalados
-#return) 0: Instalacion completa
+#Funcion que detecta si estan todos los componentes instalados
+#Return Codes:
+#	 0: Instalacion completa
 #	 1: Ningun componente instalado
 #	 2: Instalacion incompleta  
-
 function detectarInstalacion {
 	cantInst=0
 	cantNoInst=0
