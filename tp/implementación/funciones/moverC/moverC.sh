@@ -48,7 +48,7 @@ function generarRutaDestino
 function chequearExistenciaArchivoOrigen
 {
 	if [ ! -f "$RUTA_ORIGEN" ];	then
-        ../loguearC/loguearC.sh -w -t E200 -m "El archivo origen no existe" -p $COMANDO
+     #   ../loguearC/loguearC.sh -w -t E200 -m "El archivo origen no existe" -p $COMANDO
         exit -1
 	fi
 }
@@ -56,7 +56,7 @@ function chequearExistenciaArchivoOrigen
 function chequearExistenciaRutaDestino
 {
 	if [ ! -d "$RUTA_DESTINO" ];	then
-		../loguearC/loguearC.sh -w -t E201 -m "La ruta de destino no existe" -p $COMANDO
+	#	../loguearC/loguearC.sh -w -t E201 -m "La ruta de destino no existe" -p $COMANDO
         exit -2
 	fi
 }
@@ -73,7 +73,7 @@ function mover {
 	cd $RUTA_INICIAL
 	echo "Moviendo el archivo $ARCHIVO_ORIGEN a $RUTA_DESTINO/$ARCHIVO_DESTINO"
 	mv "$RUTA_ORIGEN" "$RUTA_DESTINO/$ARCHIVO_DESTINO"
-	../loguearC/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
+	#../loguearC/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
 }
 
 while getopts o:d:c: opcion
