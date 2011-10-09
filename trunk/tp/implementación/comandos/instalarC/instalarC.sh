@@ -311,6 +311,7 @@ function moverArchivos() {
 	moverArchivo "$GRUPO/$INSTDIR/encuestas.mae" "$GRUPO/$MAEDIR"
 	moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR"
 	moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR"
+	moverArchivo "$GRUPO/$INSTDIR/errores.mae" "$GRUPO/$MAEDIR"
 
 	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR"
 	if [ $? -eq 0 ]; then
