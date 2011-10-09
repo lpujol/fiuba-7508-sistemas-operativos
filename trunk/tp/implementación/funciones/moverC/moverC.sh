@@ -55,7 +55,7 @@ function chequearExistenciaArchivoOrigen
 
 function chequearExistenciaRutaDestino
 {
-	if [ ! -f "$RUTA_DESTINO" ];	then
+	if [ ! -d "$RUTA_DESTINO" ];	then
 			echo "Error: La ruta destino no existe." >&2
 			#TODO: loguear error
 		  exit -2
