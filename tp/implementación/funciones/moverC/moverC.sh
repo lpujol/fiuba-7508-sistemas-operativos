@@ -6,6 +6,7 @@
 RUTA_GRUPO="/home/juani/Desktop/SO"
 RUTA_MAE="$RUTA_GRUPO/mae"
 RUTA_INICIAL=`pwd`
+COMANDO="Comando no especificado"
 
 function esDuplicado
 {
@@ -47,18 +48,16 @@ function generarRutaDestino
 function chequearExistenciaArchivoOrigen
 {
 	if [ ! -f "$RUTA_ORIGEN" ];	then
-			echo "Error: El archivo origen no existe." >&2
-			#TODO: loguear error
-		  exit -1
+        ../loguearC/loguearC.sh -w -t E200 -m "El archivo origen no existe" -p $COMANDO
+        exit -1
 	fi
 }
 
 function chequearExistenciaRutaDestino
 {
 	if [ ! -d "$RUTA_DESTINO" ];	then
-			echo "Error: La ruta destino no existe." >&2
-			#TODO: loguear error
-		  exit -2
+		../loguearC/loguearC.sh -w -t E201 -m "La ruta de destino no existe" -p $COMANDO
+        exit -2
 	fi
 }
 
@@ -74,7 +73,7 @@ function mover {
 	cd $RUTA_INICIAL
 	echo "Moviendo el archivo $ARCHIVO_ORIGEN a $RUTA_DESTINO/$ARCHIVO_DESTINO"
 	mv "$RUTA_ORIGEN" "$RUTA_DESTINO/$ARCHIVO_DESTINO"
-	#TODO: loguear mensaje
+	../loguearC/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
 }
 
 while getopts o:d:c: opcion
