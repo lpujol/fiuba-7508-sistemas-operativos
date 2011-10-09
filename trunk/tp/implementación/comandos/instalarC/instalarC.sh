@@ -37,7 +37,8 @@ function toLower() {
 }
 
 function loguear() {
-	echo `date +"%F %T"` - $USER - instalarC - "$1" - "$2" >> $LOGFILE
+	logDate=`date "+%y-%m-%d_%H-%M-%S"` 
+	echo "$logDate,$USER,instalarC,$1,$2" >> $LOGFILE
 }
 
 function echoAndLog() {
@@ -231,9 +232,7 @@ function definirDirLog() {
 
 function mostrarParametros() {
 	mensaje="********************************************************\n"
-	mensaje+="*                                                      *\n"
 	mensaje+="* Parámetros de Instalación del paquete  Consultar     *\n"
-	mensaje+="*                                                      *\n"
 	mensaje+="********************************************************\n"
 	mensaje+="Directorio de trabajo: $GRUPO\n"
 	mensaje+="Directorio de instalación: $INSTDIR\n"
@@ -391,7 +390,6 @@ function guardarConfiguracion() {
 function detectarInstalacion {
 	cantInst=0
 	cantNoInst=0
-	status=1
 	unset instalados
 	unset noinstalados
 	
@@ -426,34 +424,45 @@ function detectarInstalacion {
 		noinstalados[$cantNoInst]="listarC"
 		let cantNoInst=cantNoInst+1
 	fi 
-
+	
 	if [  $cantInst -gt 0 ]; then
-		mensaje="********************************************************\n"
-		mensaje+="*   Sistema Consultar Copyright SisOp (c)2011          *\n"
-		mensaje+="********************************************************\n"
-		mensaje+="* Se encuentran instalados los siguientes componentes:\n"
+		if [ $cantNoInst -gt 0 ]; then 
+			status=2 #Instalacion incompleta
+		else
+			status=0 #Instalacion completa
+		fi				
+	else
+		status=1 #No se instalo ningun componente
+	fi
 
+	return $status
+}
+
+function mostrarComponentesInstalados() {
+	detectarInstalacion
+
+	mensaje="********************************************************\n"
+	mensaje+="*   Sistema Consultar Copyright SisOp (c)2011          *\n"
+	mensaje+="********************************************************\n"
+	
+	if [ $cantInst -gt 0 ]; then
+		mensaje+="* Se encuentran instalados los siguientes componentes:\n"
 		arr=("${instalados[@]}")
 		for index in ${!arr[*]}
 		do
 			mensaje+="* ${arr[$index]}\n"
 		done
+	fi
 
-		if [ $cantNoInst -gt 0 ]; then 
-			mensaje+="*						       *\n"
-			mensaje+="* Falta instalar los siguientes componentes:           *\n"	
-			for item in ${noinstalados[*]}
-			do
-				mensaje+="* $item\n"
-			done
-			echoAndLog "I" "$mensaje"
-			status=2
-		else
-			echoAndLog "I" "$mensaje"
-			status=0
-		fi
-	fi	
-	return $status
+	if [ $cantNoInst -gt 0 ]; then 
+		mensaje+="*						       *\n"
+		mensaje+="* Falta instalar los siguientes componentes:           *\n"	
+		for item in ${noinstalados[*]}
+		do
+			mensaje+="* $item\n"
+		done
+	fi
+	echoAndLog "I" "$mensaje"
 }
 
 #-----------------------------------------------------------------------------------------------#
@@ -461,10 +470,12 @@ function detectarInstalacion {
 #-----------------------------------------------------------------------------------------------#
 
 loguear "I" "Inicio de Ejecucion"
+clear
 leerConfiguracion
 detectarInstalacion
 case "$?" in 
 	0 ) 	#Instalacion completa
+		mostrarComponentesInstalados
 		echoAndLog "I" "* Proceso de Instalacion Cancelado\n"
 		exit 0;;
 
@@ -484,6 +495,7 @@ case "$?" in
 		done;;
 
 	2 ) #Instalacion previa incompleta
+		mostrarComponentesInstalados
 		mostrarParametros;;
 esac
 
@@ -491,7 +503,7 @@ confirmarInstalacion
 crearDirectorios
 moverArchivos
 guardarConfiguracion
-detectarInstalacion
+mostrarComponentesInstalados
 echo "********************************************************" 
 echoAndLog "I" "* Fin del proceso de instalacion Copyright SisOp (c)2011"
 echo "********************************************************" 
