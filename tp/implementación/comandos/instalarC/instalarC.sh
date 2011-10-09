@@ -11,24 +11,39 @@ CONFDIR="conf"
 MAEDIR="mae"
 BINDIR="bin"
 LIBDIR="lib"
-ARRIDIR="$GRUPO/arribos"
+ARRIDIR="arribos"
 DATASIZE=100 #MB
-LOGDIR="$GRUPO/log"
+LOGDIR="log"
 LOGEXT=".log"
 LOGSIZE=400 #KB
 LOGFILE="$INSTDIR/instalarC.log"
+CONFFILE="$CONFDIR/instalarC.conf"
+INICIARU=""
+INICIARF=""
+DETECTARU=""
+DETECTARF=""
+SUMARU=""
+SUMARF=""
+LISTARU=""
+LISTARF=""
 
 function toLower() {
 	echo $1 | tr "[:upper:]" "[:lower:]"
 }
 
 function loguear() {
-	echo -e `date +"%F %T"` - $USER - instalarC - "$1" - "$2" >> $LOGFILE
+	echo `date +"%F %T"` - $USER - instalarC - "$1" - "$2" >> $LOGFILE
 }
 
 function echoAndLog() {
-	echo -e -n "$2"
+	echo -e "$2"
 	loguear "$1" "$2"
+}
+
+function crearDirectorio() {
+	if [ ! -d $2 ]; then
+		mkdir -p -m$1 $2 2>/dev/null 
+	fi
 }
 
 function terminosCondiciones() {
@@ -65,12 +80,12 @@ function verificarPerl() {
 }
 
 function mensajesInformativos() {
-	echoAndLog "I" "Todos los directorios del sistema serán subdirectorios de $GRUPO\n"
-	echoAndLog "I" "Todos los componentes de la instalación se obtendrán del repositorio: $GRUPO/$INSTDIR\n"
+	echoAndLog "I" "Todos los directorios del sistema serán subdirectorios de $GRUPO"
+	echoAndLog "I" "Todos los componentes de la instalación se obtendrán del repositorio: $GRUPO/$INSTDIR"
 	listado=`ls $GRUPO/$INSTDIR`
 	echoAndLog "I" "$listado\n"
-	echoAndLog "I" "El log de la instalación se almacenara en $GRUPO/$INSTDIR\n"
-	echoAndLog "I" "Al finalizar la instalación, si la misma fue exitosa se dejara un archivo de configuración en $GRUPO/$CONFDIR\n"
+	echoAndLog "I" "El log de la instalación se almacenara en $GRUPO/$INSTDIR"
+	echoAndLog "I" "Al finalizar la instalación, si la misma fue exitosa se dejara un archivo de configuración en $GRUPO/$CONFDIR"
 }
 
 function definirDirBinarios() {
@@ -78,7 +93,7 @@ function definirDirBinarios() {
 	while [ "$isOk" -eq 0 ]; do
 		echoAndLog "I" "Ingrese el nombre del directorio de ejecutables ($BINDIR):"
 		read dirBin
-		if [ \! -z "$dirBin" ]; then
+		if [ ! -z "$dirBin" ]; then
 			value=`echo $dirBin | grep "^\(\w\|_\)\+\(/\(\w\|_\)\+\)*$"`
 			if [ $? -eq 0 ]; then
 				BINDIR=$dirBin
@@ -98,7 +113,7 @@ function definirDirArribos() {
 	while [ "$isOk" -eq 0 ]; do
 		echoAndLog "I" "Ingrese el nombre del directorio que permite el arribo de archivos externos ($ARRIDIR):"
 		read dirArribos
-		if [ \! -z "$dirArribos" ]; then
+		if [ ! -z "$dirArribos" ]; then
 			value=`echo $dirArribos | grep "^\(\w\|_\)\+\(/\(\w\|_\)\+\)*$"`
 			if [ $? -eq 0 ]; then
 				ARRIDIR=$dirArribos
@@ -119,7 +134,7 @@ function definirDirArribos() {
 		while [ "$isOk" -eq 0 ]; do	
 			echoAndLog "I" "Ingrese el espacio minimo requerido para datos externos en MB ($DATASIZE MB):"
 			read dataSize
-			if [ \! -z $dataSize ]; then
+			if [ ! -z $dataSize ]; then
 				value=`echo $dataSize | grep "^[0-9]\+$"`
 				if [ $? -eq 0 ]; then
 					DATASIZE=$dataSize
@@ -146,7 +161,7 @@ function definirDirLog() {
 	while [ "$isOk" -eq 0 ]; do
 		echoAndLog "I" "Ingrese el nombre del directorio de log ($LOGDIR):"
 		read dirLog
-		if [ \! -z "$dirLog" ]; then
+		if [ ! -z "$dirLog" ]; then
 			value=`echo $dirLog | grep "^\(\w\|_\)\+\(/\(\w\|_\)\+\)*$"`
 			if [ $? -eq 0 ]; then
 				LOGDIR=$dirLog
@@ -166,7 +181,7 @@ function definirDirLog() {
 	while [ "$isOk" -eq 0 ]; do
 	echoAndLog "I" "Ingrese la extension para los archivos de log ($LOGEXT):"
 	read logExt
-	if [ \! -z "$logExt" ]; then
+	if [ ! -z "$logExt" ]; then
 		value=`echo $logExt | grep "^\.\w\{1,\}$"`
 		if [ $? -eq 0 ]; then
 			LOGEXT=$logExt
@@ -186,7 +201,7 @@ function definirDirLog() {
 	while [ "$isOk" -eq 0 ]; do	
 	echoAndLog "I" "Ingrese el tamaño máximo para los archivos <$LOGEXT> en KB ($LOGSIZE):"
 	read logSize
-	if [ \! -z $logSize ]; then
+	if [ ! -z $logSize ]; then
 		value=`echo $logSize | grep "^[0-9]\+$"`
 		if [ $? -eq 0 ]; then
 			LOGSIZE=$logSize
@@ -201,26 +216,29 @@ function definirDirLog() {
 	loguear "I" "Tamaño máximo para archivos de log: $LOGSIZE"
 }
 
-function confirmarParametros() {
-	echo `clear`
-	mensaje="**********************************************************************\n"
-	mensaje+="*\n"
-	mensaje+="* Parámetros de Instalación del paquete  Consultar\n"
-	mensaje+="*\n"
-	mensaje+="**********************************************************************\n"
+function mostrarParametros() {
+	mensaje="********************************************************\n"
+	mensaje+="*                                                      *\n"
+	mensaje+="* Parámetros de Instalación del paquete  Consultar     *\n"
+	mensaje+="*                                                      *\n"
+	mensaje+="********************************************************\n"
 	mensaje+="Directorio de trabajo: $GRUPO\n"
-	mensaje+="Directorio de instalación: $GRUPO/$INSTDIR\n"
-	mensaje+="Directorio de configuración: $GRUPO/$CONFDIR\n"
-	mensaje+="Directorio de datos maestros: $GRUPO/$MAEDIR\n"
-	mensaje+="Directorio de ejecutables: $GRUPO/$BINDIR\n"
-	mensaje+="Librería de funciones: $GRUPO/lib\n"
+	mensaje+="Directorio de instalación: $INSTDIR\n"
+	mensaje+="Directorio de configuración: $CONFDIR\n"
+	mensaje+="Directorio de datos maestros: $MAEDIR\n"
+	mensaje+="Directorio de ejecutables: $BINDIR\n"
+	mensaje+="Librería de funciones: lib\n"
 	mensaje+="Directorio de arribos: $ARRIDIR\n"
 	mensaje+="Espacio mínimo reservado en $ARRIDIR: $DATASIZE MB\n"
 	mensaje+="Directorio para los archivos de Log: $LOGDIR\n"
 	mensaje+="Extensión para los archivos de Log: $LOGEXT\n"
 	mensaje+="Tamaño máximo para cada archivo de Log: $LOGSIZE Kb\n"
-	mensaje+="Log de la instalación: $GRUPO/$INSTDIR\n\n"
-	mensaje+="Si los datos ingresados son correctos de ENTER para continuar, si\n"
+	mensaje+="Log de la instalación: $INSTDIR\n\n"
+	echoAndLog "I" "$mensaje"
+}
+
+function confirmarParametros() {
+	mensaje="Si los datos ingresados son correctos de ENTER para continuar, si\n"
 	mensaje+="desea modificar algún parámetro oprima cualquier tecla para reiniciar\n"
 	echoAndLog "I" "$mensaje"	
 	read -s -n1 respuesta
@@ -232,28 +250,235 @@ function confirmarParametros() {
 	fi
 }
 
+function confirmarInstalacion() {
+	echoAndLog "I" "Iniciando Instalación… Está UD. seguro? (Si/No):"
+	read respuesta
+	if [ "$respuesta" = "" ] || [ `toLower $respuesta` != "si" ]; then
+		echoAndLog "I" "Instalacion Cancelada\n"
+		exit 1
+	fi
+}
+
+function crearDirectorios() {
+	echo "Creando estructuras de directorio..." 
+	crearDirectorio 744 "$GRUPO/$CONFDIR"
+	crearDirectorio 744 "$GRUPO/$MAEDIR"
+	crearDirectorio 755 "$GRUPO/$BINDIR"
+	crearDirectorio 777 "$GRUPO/$ARRIDIR"
+	crearDirectorio 777 "$GRUPO/$LOGDIR"
+	crearDirectorio 777 "$GRUPO/rechazados"
+	crearDirectorio 777 "$GRUPO/preparados"
+	crearDirectorio 777 "$GRUPO/listos"
+	crearDirectorio 777 "$GRUPO/nolistos"
+	crearDirectorio 777 "$GRUPO/ya"
+}
+
+#$1 archivo a mover
+#$2 destino del archivo
+function moverArchivo() {
+	if [ ! -f $1 ]; then 
+		loguear "E" "No se puede mover el archivo ${1##*/}. Archivo inexistente" 
+		return 1
+	elif [ ! -d $2 ]; then
+		loguear "E" "No se puede mover el archivo ${1##*/}. El directorio $2 no existe"
+		return 1
+	else
+		mv -u $1 $2 2>/dev/null
+		if [ $? -ne 0 ]; then
+			loguear "E" "No se pudo mover el archivo ${1##*/}"
+			return 1
+		fi
+	fi
+}
+
+function moverArchivos() {
+	echo "Moviendo archivos..."
+
+	moverArchivo "$GRUPO/$INSTDIR/encuestas.mae" "$GRUPO/$MAEDIR"
+	moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR"
+	moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR"
+
+	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR"
+	if [ $? -eq 0 ]; then
+		INICIARU=$USER
+		INICIARF=`date +"%F %T"`
+	fi
+
+	moverArchivo "$GRUPO/$INSTDIR/listarC.pl" "$GRUPO/$BINDIR"
+	if [ $? -eq 0 ]; then
+		LISTARU=$USER
+		LISTARF=`date +"%F %T"`
+	fi
+
+	moverArchivo "$GRUPO/$INSTDIR/sumarC.sh" "$GRUPO/$BINDIR"
+	if [ $? -eq 0 ]; then
+		SUMARU=$USER
+		SUMARF=`date +"%F %T"`
+	fi
+
+	moverArchivo "$GRUPO/$INSTDIR/detectarC.sh" "$GRUPO/$BINDIR"
+	if [ $? -eq 0 ]; then
+		DETECTARU=$USER
+		DETECTARF=`date +"%F %T"`
+	fi	
+}
+
+function leerConfiguracion() {
+	if [ -f $CONFFILE ]; then
+		GRUPO=`grep "CURRDIR" $CONFFILE | cut -s -f2 -d'='`	
+		CONFDIR=`grep "CONFDIR" $CONFFILE | cut -s -f2 -d'='`	
+		DATAMAE=`grep "DATAMAE" $CONFFILE | cut -s -f2 -d'='`	
+		LIBDIR=`grep "LIBDIR" $CONFFILE | cut -s -f2 -d'='`	
+		BINDIR=`grep "BINDIR" $CONFFILE | cut -s -f2 -d'='`	
+		ARRIDIR=`grep "ARRIDIR" $CONFFILE | cut -s -f2 -d'='`	
+		DATASIZE=`grep "DATASIZE" $CONFFILE | cut -s -f2 -d'='`	
+		LOGSIZE=`grep "MAXLOGSIZE" $CONFFILE | cut -s -f2 -d'='`	
+		LOGDIR=`grep "LOGDIR" $CONFFILE | cut -s -f2 -d'='`	
+		LOGEXT=`grep "LOGEXT" $CONFFILE | cut -s -f2 -d'='`	
+		INICIARU=`grep "INICIARU" $CONFFILE | cut -s -f2 -d'='`	
+		INICIARF=`grep "INICIARF" $CONFFILE | cut -s -f2 -d'='`	
+		DETECTARU=`grep "DETECTARU" $CONFFILE | cut -s -f2 -d'='`	
+		DETECTARF=`grep "DETECTARF" $CONFFILE | cut -s -f2 -d'='`	
+		SUMARU=`grep "SUMARU" $CONFFILE | cut -s -f2 -d'='`	
+		SUMARF=`grep "SUMARF" $CONFFILE | cut -s -f2 -d'='`	
+		LISTARU=`grep "LISTARU" $CONFFILE | cut -s -f2 -d'='`	
+		LISTARF=`grep "LISTARF" $CONFFILE | cut -s -f2 -d'='`	
+	fi
+}
+
+function guardarConfiguracion() {
+	echo "CURRDIR=$GRUPO" > $CONFFILE	
+	echo "CONFDIR=$CONFDIR" >> $CONFFILE
+	echo "DATAMAE=$MAEDIR" >> $CONFFILE
+	echo "LIBDIR=$LIBDIR" >> $CONFFILE
+	echo "BINDIR=$BINDIR" >> $CONFFILE
+	echo "ARRIDIR=$ARRIDIR" >> $CONFFILE
+	echo "DATASIZE=$DATASIZE" >> $CONFFILE
+	echo "LOGDIR=$LOGDIR" >> $CONFFILE
+	echo "LOGEXT=$LOGEXT" >> $CONFFILE
+	echo "MAXLOGSIZE=$LOGSIZE" >> $CONFFILE
+	echo "INICIARU=$INICIARU" >> $CONFFILE
+	echo "INICIARF=$INICIARF" >> $CONFFILE
+	echo "DETECTARU=$DETECTARU" >> $CONFFILE
+	echo "DETECTARF=$DETECTARF" >> $CONFFILE
+	echo "SUMARU=$SUMARU" >> $CONFFILE
+	echo "SUMARF=$SUMARF" >> $CONFFILE
+	echo "LISTARU=$LISTARU" >> $CONFFILE
+	echo "LISTARF=$LISTARF" >> $CONFFILE
+}
+
+
+#detectarInstalacion
+#Detecta si estan todos los componentes instalados
+#return) 0: Instalacion completa
+#	 1: Ningun componente instalado
+#	 2: Instalacion incompleta  
+
+function detectarInstalacion {
+	cantInst=0
+	cantNoInst=0
+	status=1
+	unset instalados
+	unset noinstalados
+	
+	if [ "$INICIARU" != "" ] && [ -f "$GRUPO/$BINDIR/iniciarC.sh" ]; then
+		instalados[$cantInst]="iniciarC $INICIARU $INICIARF"
+		let cantInst=cantInst+1
+	else
+		noinstalados[$cantNoInst]="iniciarC"
+		let cantNoInst=cantNoInst+1
+	fi 
+
+	if [ "$DETECTARU" != "" ] && [ -f "$GRUPO/$BINDIR/detectarC.sh" ]; then
+		instalados[$cantInst]="detectarC $DETECTARU $DETECTARF"
+		let cantInst=cantInst+1
+	else
+		noinstalados[$cantNoInst]="detectarC"
+		let cantNoInst=cantNoInst+1
+	fi 
+	
+	if [ "$SUMARU" != "" ] && [ -f "$GRUPO/$BINDIR/sumarC.sh" ]; then
+		instalados[$cantInst]="sumarC $SUMARU $SUMARF"
+		let cantInst=cantInst+1
+	else
+		noinstalados[$cantNoInst]="sumarC"
+		let cantNoInst=cantNoInst+1
+	fi 
+
+	if [ "$LISTARU" != "" ] && [ -f "$GRUPO/$BINDIR/listarC.pl" ]; then
+		instalados[$cantInst]="listarC $LISTARU $LISTARF"
+		let cantInst=cantInst+1
+	else
+		noinstalados[$cantNoInst]="listarC"
+		let cantNoInst=cantNoInst+1
+	fi 
+
+	if [  $cantInst -gt 0 ]; then
+		mensaje="********************************************************\n"
+		mensaje+="*   Sistema Consultar Copyright SisOp (c)2011          *\n"
+		mensaje+="********************************************************\n"
+		mensaje+="* Se encuentran instalados los siguientes componentes:\n"
+
+		arr=("${instalados[@]}")
+		for index in ${!arr[*]}
+		do
+			mensaje+="* ${arr[$index]}\n"
+		done
+
+		if [ $cantNoInst -gt 0 ]; then 
+			mensaje+="*						       *\n"
+			mensaje+="* Falta instalar los siguientes componentes:           *\n"	
+			for item in ${noinstalados[*]}
+			do
+				mensaje+="* $item\n"
+			done
+			echoAndLog "I" "$mensaje"
+			status=2
+		else
+			echoAndLog "I" "$mensaje"
+			status=0
+		fi
+	fi	
+	return $status
+}
+
 #-----------------------------------------------------------------------------------------------#
 #----------------------------------------------MAIN---------------------------------------------#
 #-----------------------------------------------------------------------------------------------#
 
 loguear "I" "Inicio de Ejecucion"
+leerConfiguracion
+detectarInstalacion
+case "$?" in 
+	0 ) 	#Instalacion completa
+		echoAndLog "I" "* Proceso de Instalacion Cancelado\n"
+		exit 0;;
 
-#TODO: Detectar Instalacion
-terminosCondiciones
-verificarPerl
-mensajesInformativos
+	1 ) 	#No hay instalacion previa
+		terminosCondiciones
+		verificarPerl
+		mensajesInformativos
+		modifica=1
+		while [ $modifica -ne 0 ]; do
+			definirDirBinarios
+			definirDirArribos
+			definirDirLog
+			clear
+			mostrarParametros
+			confirmarParametros
+			modifica=$?
+		done;;
 
-modifica=1
-while [ $modifica -ne 0 ]; do
-	definirDirBinarios
-	definirDirArribos
-	definirDirLog
-	confirmarParametros
-	modifica=$?
-done
+	2 ) #Instalacion previa incompleta
+		mostrarParametros;;
+esac
 
-echo "Iniciando Instalación… Está UD. seguro? (Si/No)"
-#TODO: Crear estructura de directorios
-#TODO: Mover archivos binarios y maestros
-#TODO: Actualizar archivo de configuracion
-
+confirmarInstalacion
+crearDirectorios
+moverArchivos
+guardarConfiguracion
+detectarInstalacion
+echo "********************************************************" 
+echoAndLog "I" "* Fin del proceso de instalacion Copyright SisOp (c)2011"
+echo "********************************************************" 
+exit $?
