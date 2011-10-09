@@ -97,7 +97,7 @@ function mensajesInformativos() {
 	echoAndLog "I" "Todos los directorios del sistema serán subdirectorios de $GRUPO"
 	echoAndLog "I" "Todos los componentes de la instalación se obtendrán del repositorio: $GRUPO/$INSTDIR"
 	listado=`ls $GRUPO/$INSTDIR`
-	echoAndLog "I" "$listado\n"
+	echoAndLog "I" "Contenido del repositorio: \n$listado\n"
 	echoAndLog "I" "El log de la instalación se almacenara en $GRUPO/$INSTDIR"
 	echoAndLog "I" "Al finalizar la instalación, si la misma fue exitosa se dejara un archivo de configuración en $GRUPO/$CONFDIR"
 }
@@ -273,16 +273,17 @@ function confirmarInstalacion() {
 
 function crearDirectorios() {
 	echo "Creando estructuras de directorio..." 
-	crearDirectorio 744 "$GRUPO/$CONFDIR"
-	crearDirectorio 744 "$GRUPO/$MAEDIR"
+	crearDirectorio 755 "$GRUPO/$CONFDIR"
+	crearDirectorio 755 "$GRUPO/$MAEDIR"
 	crearDirectorio 755 "$GRUPO/$BINDIR"
-	crearDirectorio 777 "$GRUPO/$ARRIDIR"
-	crearDirectorio 777 "$GRUPO/$LOGDIR"
-	crearDirectorio 777 "$GRUPO/rechazados"
-	crearDirectorio 777 "$GRUPO/preparados"
-	crearDirectorio 777 "$GRUPO/listos"
-	crearDirectorio 777 "$GRUPO/nolistos"
-	crearDirectorio 777 "$GRUPO/ya"
+	crearDirectorio 755 "$GRUPO/$ARRIDIR"
+	crearDirectorio 755 "$GRUPO/$LOGDIR"
+	crearDirectorio 755 "$GRUPO/$LIBDIR"
+	crearDirectorio 755 "$GRUPO/rechazados"
+	crearDirectorio 755 "$GRUPO/preparados"
+	crearDirectorio 755 "$GRUPO/listos"
+	crearDirectorio 755 "$GRUPO/nolistos"
+	crearDirectorio 755 "$GRUPO/ya"
 }
 
 #Funcion para mover archivos
@@ -312,6 +313,11 @@ function moverArchivos() {
 	moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR"
 	moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR"
 	moverArchivo "$GRUPO/$INSTDIR/errores.mae" "$GRUPO/$MAEDIR"
+	moverArchivo "$GRUPO/$INSTDIR/moverC.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/loguearC.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/startD.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/stopD.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/mirarC.sh" "$GRUPO/$LIBDIR"
 
 	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR"
 	if [ $? -eq 0 ]; then
