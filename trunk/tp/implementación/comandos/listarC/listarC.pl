@@ -19,8 +19,8 @@
 
 #
 # Los parámetros pueden ser:
-#  -e, --encuestador
-#  -c, --código-de-encuesta
+#  -enc, --encuestador
+#  -cod, --código-de-encuesta
 #  -n, --nro-de-encuesta
 #  -m, --modalidad
 #  -h, --help
@@ -32,7 +32,8 @@
 #
 # Las opciones pueden ser:
 #  -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-#  -e (resuelve y emite un informe) o la combinación de ellas
+#  -e (resuelve y emite un informe)
+# O la combinación de ellas.
 #
 
 #
@@ -146,6 +147,24 @@ my @array_archivos_benerro;
 my @array_codigos_de_beneficio;
 my @array_agencias;
 
+
+
+#
+# Variables seteadas a partir de los argumentos recibidos por el programa
+#
+                                    # parámetro que lo controla
+my $encuestador = "";               # -enc, --encuestador
+my $codigoEncuesta = 0;             # -cod, --código-de-encuesta
+my $nroEncuesta = 0;                # -n, --nro-de-encuesta
+my $modalidad = 0;                  # -m, --modalidad
+my $ayudaSolicitada = 0;            # -h, --help
+my $modoPresentacionResultados = "";# "mostrar_en_pantalla":       -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
+                                    # "emitir_informe_en_archivo": -e (resuelve y emite un informe)
+
+
+use Switch;
+
+
 #recorro todos los parametros pasados al programa
 #selecciono nombres de archivos de beneficiarios
 #los guardo en su array correspondiente
@@ -154,6 +173,71 @@ my @array_agencias;
 #verifico si se debe imprimir la matriz de controul
 print "Parametros: ";
 foreach $param (@ARGV) {
+
+
+$i;
+chomp($var=<STDIN>);
+
+switch ($var){
+  case(1) { $i = "One"; }
+  case(2) { $i = "Two"; }
+  case(3) { $i = "Three"; }
+  else    { $i = "Other"; }
+}
+
+print "case: $i\n";
+
+
+	SWITCH: {
+
+		($param == "-enc" || $param == "--encuestador") && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		($param == "-cod" || $param == "--código-de-encuesta") && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		($param == "-n"   || $param == "--nro-de-encuesta") && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+		
+		($param == "-m"   || $param == "--modalidad") && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		($param == "-h"   || $param == "--help") && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		$param == "-c" && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		$param == "-e" && do {
+			print "\$param = $param\n"; last SWITCH;
+		};
+
+		#default, error!: argumento desconocido!
+		print "\$param is not equal with 1 or 2 or 3, \$param=$param\n";
+	}
+
+
+
+
+
+#my $encuestador = "";               # -enc, --encuestador
+#my $codigoEncuesta = 0;             # -cod, --código-de-encuesta
+#my $nroEncuesta = 0;                # -n, --nro-de-encuesta
+#my $modalidad = 0;                  # -m, --modalidad
+#my $ayudaSolicitada = 0;            # -h, --help
+#my $modoPresentacionResultados = "";# "mostrar_en_pantalla":       -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
+                                    # "emitir_informe_en_archivo": -e (resuelve y emite un informe)
+
+
+
+
+
 
 	#el primer parametro pasado es
 	#el path de recibidos
