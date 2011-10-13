@@ -46,6 +46,24 @@ function echoAndLog() {
 	loguear "$1" "$2"
 }
 
+function chequeoInicial() {
+	if [ ! -w "$GRUPO" ]; then
+		echo "No tiene permisos de escitura en el directorio de instalación"
+		echo "Instalación cancelada"
+		exit 2
+	fi
+
+	if [ ! -d "$INSTDIR" ]; then
+		echo "No existe el directorio $INSTDIR"
+		echo "Instalación cancelada"
+		exit 2
+	elif [ ! -w "$INSTDIR" ]; then
+		echo "No tiene permisos de escritura sobre el directorio $INSTDIR"
+		echo "Instalación cancelada"
+		exit 2
+	fi
+}
+
 #Funcion para crear directorios
 #Parametros:
 #1 - Permisos 
@@ -400,39 +418,34 @@ function detectarInstalacion {
 	unset instalados
 	unset noinstalados
 	
-	if [ "$INICIARU" != "" ] && [ -f "$GRUPO/$BINDIR/iniciarC.sh" ]; then
-		instalados[$cantInst]="iniciarC $INICIARU $INICIARF"
-		let cantInst=cantInst+1
-	else
-		noinstalados[$cantNoInst]="iniciarC"
-		let cantNoInst=cantNoInst+1
-	fi 
+	archivosAVerificar=(	"$GRUPO/$BINDIR/iniciarC.sh"
+				"$GRUPO/$BINDIR/detectarC.sh"
+				"$GRUPO/$BINDIR/sumarC.sh"
+				"$GRUPO/$BINDIR/listarC.pl"
+				"$GRUPO/$MAEDIR/encuestas.mae"
+				"$GRUPO/$MAEDIR/preguntas.mae"
+				"$GRUPO/$MAEDIR/encuestadores.mae"
+				"$GRUPO/$MAEDIR/errores.mae"
+				"$GRUPO/$LIBDIR/moverC.sh"
+				"$GRUPO/$LIBDIR/loguearC.sh"
+				"$GRUPO/$LIBDIR/startD.sh"
+				"$GRUPO/$LIBDIR/stopD.sh"
+				"$GRUPO/$LIBDIR/mirarC.sh"
+			   )
 
-	if [ "$DETECTARU" != "" ] && [ -f "$GRUPO/$BINDIR/detectarC.sh" ]; then
-		instalados[$cantInst]="detectarC $DETECTARU $DETECTARF"
-		let cantInst=cantInst+1
-	else
-		noinstalados[$cantNoInst]="detectarC"
-		let cantNoInst=cantNoInst+1
-	fi 
+	for archivo in ${archivosAVerificar[*]}
+	do
+		if [ -f "$archivo" ]; then
+			owner=`ls $archivo -l | awk '{print $3 " " $6 " " $7}'`
+			instalados[$cantInst]="${archivo##*/} $owner"
+			let cantInst=$cantInst+1
+		else
+			noinstalados[$cantNoInst]="${archivo##*/}"
+			let cantNoInst=$cantNoInst+1
+		fi
+	done
 	
-	if [ "$SUMARU" != "" ] && [ -f "$GRUPO/$BINDIR/sumarC.sh" ]; then
-		instalados[$cantInst]="sumarC $SUMARU $SUMARF"
-		let cantInst=cantInst+1
-	else
-		noinstalados[$cantNoInst]="sumarC"
-		let cantNoInst=cantNoInst+1
-	fi 
-
-	if [ "$LISTARU" != "" ] && [ -f "$GRUPO/$BINDIR/listarC.pl" ]; then
-		instalados[$cantInst]="listarC $LISTARU $LISTARF"
-		let cantInst=cantInst+1
-	else
-		noinstalados[$cantNoInst]="listarC"
-		let cantNoInst=cantNoInst+1
-	fi 
-	
-	if [  $cantInst -gt 0 ]; then
+	if [  $cantInst -gt 0 ] && [ -f "$CONFFILE" ]; then
 		if [ $cantNoInst -gt 0 ]; then 
 			status=2 #Instalacion incompleta
 		else
@@ -457,16 +470,15 @@ function mostrarComponentesInstalados() {
 		arr=("${instalados[@]}")
 		for index in ${!arr[*]}
 		do
-			mensaje+="* ${arr[$index]}\n"
+			mensaje+="  ${arr[$index]}\n"
 		done
 	fi
 
 	if [ $cantNoInst -gt 0 ]; then 
-		mensaje+="*						       *\n"
-		mensaje+="* Falta instalar los siguientes componentes:           *\n"	
+		mensaje+="\n* Falta instalar los siguientes componentes:\n"	
 		for item in ${noinstalados[*]}
 		do
-			mensaje+="* $item\n"
+			mensaje+="  $item\n"
 		done
 	fi
 	echoAndLog "I" "$mensaje"
@@ -478,6 +490,7 @@ function mostrarComponentesInstalados() {
 
 loguear "I" "Inicio de Ejecucion"
 clear
+chequeoInicial
 leerConfiguracion
 detectarInstalacion
 case "$?" in 
