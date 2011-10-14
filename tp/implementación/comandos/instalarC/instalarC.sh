@@ -333,8 +333,8 @@ function moverArchivos() {
 	moverArchivo "$GRUPO/$INSTDIR/errores.mae" "$GRUPO/$MAEDIR"
 	moverArchivo "$GRUPO/$INSTDIR/moverC.sh" "$GRUPO/$LIBDIR"
 	moverArchivo "$GRUPO/$INSTDIR/loguearC.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/startD.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/stopD.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/StartD.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/StopD.sh" "$GRUPO/$LIBDIR"
 	moverArchivo "$GRUPO/$INSTDIR/mirarC.sh" "$GRUPO/$LIBDIR"
 
 	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR"
@@ -428,8 +428,8 @@ function detectarInstalacion {
 				"$GRUPO/$MAEDIR/errores.mae"
 				"$GRUPO/$LIBDIR/moverC.sh"
 				"$GRUPO/$LIBDIR/loguearC.sh"
-				"$GRUPO/$LIBDIR/startD.sh"
-				"$GRUPO/$LIBDIR/stopD.sh"
+				"$GRUPO/$LIBDIR/StartD.sh"
+				"$GRUPO/$LIBDIR/StopD.sh"
 				"$GRUPO/$LIBDIR/mirarC.sh"
 			   )
 

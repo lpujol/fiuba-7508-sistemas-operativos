@@ -165,13 +165,13 @@ else
 
  
 #Umgebungsvariablen, später löschen
-grupo='/home/havoc/tpMy'
+#grupo='/home/havoc/tpMy'
 
-DATAMAE="$grupo/mae"
+#DATAMAE="$GRUPO/mae"
 
 #Ambiente iniciado?
 #Hier das tolle Programm da nutzen
-if [ -z $grupo ] 
+if [ -z $GRUPO ] 
   then
     echo Falta Ambiente
     exit 3
@@ -184,7 +184,7 @@ fi
 
 if [ -z $LOGDIR ]
   then
-  LOGDIR=$grupo/log
+  LOGDIR=$GRUPO/log
 fi
 
 if [ -z $LOGEXT ]
