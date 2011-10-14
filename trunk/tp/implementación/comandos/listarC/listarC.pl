@@ -157,144 +157,121 @@ my $encuestador = "";               # -enc, --encuestador
 my $codigoEncuesta = 0;             # -cod, --código-de-encuesta
 my $nroEncuesta = 0;                # -n, --nro-de-encuesta
 my $modalidad = 0;                  # -m, --modalidad
-my $ayudaSolicitada = 0;            # -h, --help
-my $modoPresentacionResultados = "";# "mostrar_en_pantalla":       -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-                                    # "emitir_informe_en_archivo": -e (resuelve y emite un informe)
+my $mostrarResultadosEnPantalla = 0;# -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
+my $guardarResultadosEnArchivo = 0; # -e (resuelve y emite un informe)
 
 
 use Switch;
 
 
-#recorro todos los parametros pasados al programa
-#selecciono nombres de archivos de beneficiarios
-#los guardo en su array correspondiente
-#selecciono codigos de beneficio
-#los guardo en su array correspondiente
-#verifico si se debe imprimir la matriz de controul
-print "Parametros: ";
-foreach $param (@ARGV) {
+$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 
 
-$i;
-chomp($var=<STDIN>);
-
-switch ($var){
-  case(1) { $i = "One"; }
-  case(2) { $i = "Two"; }
-  case(3) { $i = "Three"; }
-  else    { $i = "Other"; }
+sub DEBUG{
+	print $_[0];
 }
 
-print "case: $i\n";
-
-
-	SWITCH: {
-
-		($param == "-enc" || $param == "--encuestador") && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		($param == "-cod" || $param == "--código-de-encuesta") && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		($param == "-n"   || $param == "--nro-de-encuesta") && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-		
-		($param == "-m"   || $param == "--modalidad") && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		($param == "-h"   || $param == "--help") && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		$param == "-c" && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		$param == "-e" && do {
-			print "\$param = $param\n"; last SWITCH;
-		};
-
-		#default, error!: argumento desconocido!
-		print "\$param is not equal with 1 or 2 or 3, \$param=$param\n";
-	}
-
-
-
-
-
-#my $encuestador = "";               # -enc, --encuestador
-#my $codigoEncuesta = 0;             # -cod, --código-de-encuesta
-#my $nroEncuesta = 0;                # -n, --nro-de-encuesta
-#my $modalidad = 0;                  # -m, --modalidad
-#my $ayudaSolicitada = 0;            # -h, --help
-#my $modoPresentacionResultados = "";# "mostrar_en_pantalla":       -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-                                    # "emitir_informe_en_archivo": -e (resuelve y emite un informe)
-
-
-
-
-
-
-	#el primer parametro pasado es
-	#el path de recibidos
-	if ($path_recibidos eq ""){
-		$path_recibidos = $param;
-	}
-	else
-	{
-		print "$param\t";
-	}
-
-	if($param =~ m/^benef\.[0-9]+$/){
-		push(@array_archivos_beneficiarios, $param);
-	}
-
-	if($param =~ m/^benerro\.[0-9]+$/){
-		push(@array_archivos_benerro, $param);
-	}
-
-	if($param =~ m/^[0-9][0-9][0-9][0-9][0-9]$/){
-		push(@array_codigos_de_beneficio, $param);
-	}
-
-	if($param =~ m/^[a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z]$/){
-		push(@array_agencias, $param);
-	}
-
-	if ($param =~ m/^-c$/){
-		$imprimir_matriz_de_control = $param;
-	}
-
-	if ($param =~ m/^-ea$/){
-		$procesar_aceptados = 1;
-	}
-	
-	if ($param =~ m/^-er$/){
-		$procesar_rechazados = 1;
-	}
-	
-	if ($param =~ m/^-ep$/){
-		$procesar_pendientes = 1;
-	}
-	
-	if ($param =~ m/^-t$/){
-		$salida_por_pantalla = 1;
-	}
-
-	if ($param =~ m/^-d$/){
-		$salida_por_archivo = 1;
-	}
-
-	if (($param =~ m/^-dt$/)||($param =~ m/^-td$/)){
-		$salida_por_pantalla = 1;
-		$salida_por_archivo = 1;
-	}
+sub mostrarAyuda{
+	print "...mostrando la ayuda...";
 }
-print "\n";
+
+sub procesarArgumentos{
+	DEBUG "Parametros: ";
+	foreach $param (@_) {
+	
+	
+		switch ($estado_procesador_de_argumentos){
+			case("recibiendo-tipo-parametro") {
+				switch($param){
+					case["-enc", "--encuestador"]{
+						DEBUG("\$param = $param\n");
+						$estado_procesador_de_argumentos = "recibiendo-valor-encuestador";
+					}
+	
+					case["-cod", "--código-de-encuesta"]{
+						DEBUG "\$param = $param\n";
+						$estado_procesador_de_argumentos = "recibiendo-valor-codigo-encuesta";
+					}
+			
+					case["-n", "--nro-de-encuesta"]{
+						DEBUG "\$param = $param\n";
+						$estado_procesador_de_argumentos = "recibiendo-valor-nro-encuesta";
+					}
+					
+					case["-m", "--modalidad"]{
+						DEBUG "\$param = $param\n";
+						$estado_procesador_de_argumentos = "recibiendo-valor-modalidad";
+					}
+			
+					case["-h", "--help"]{
+						DEBUG "\$param = $param\n";
+						mostrarAyuda();
+						return 1;
+					}
+			
+					case("-c"){
+						DEBUG "\$param = $param\n";
+						$mostrarResultadosEnPantalla = 1;
+					}
+	
+					case("-e"){
+						DEBUG "\$param = $param\n";
+						$guardarResultadosEnArchivo = 1;
+					}
+			
+					else{
+						DEBUG "ERROR: argumento desconocido!, \$param=$param\n";
+						return 1;
+					}
+				}
+			}
+	
+			case("recibiendo-valor-encuestador"){
+				$encuestador = $param;
+				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+	
+			case("recibiendo-valor-codigo-encuesta"){
+				$codigoEncuesta = $param;
+				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+	
+			case("recibiendo-valor-nro-encuesta"){
+				$nroEncuesta = $param;
+				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+	
+			case("recibiendo-valor-modalidad"){
+				$modalidad = $param;
+				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+	
+			else{
+				DEBUG "\ERROR: estado desconocido, \$estado_procesador_de_argumentos=$estado_procesador_de_argumentos\n";
+				return 1;
+			}
+		}
+			
+	#	if($param =~ m/^benef\.[0-9]+$/){
+	#		push(@array_archivos_beneficiarios, $param);
+	#	}
+	
+	}
+	DEBUG "\n";
+	
+	return 0;
+}
+
+
+
+if(procesarArgumentos(@ARGV) != 0){
+	exit;
+}
+
+
+
+
+
 
 if (($salida_por_pantalla == 0)&&($salida_por_archivo == 0)){
 	$salida_por_pantalla = 1; 
@@ -317,10 +294,10 @@ if ($salida_por_archivo){
 	$secuencia = $secuencia + 1;
 
 	open (SEC_OUT,">plist.secuencia");
-	print SEC_OUT "$secuencia\n";
+	DEBUG SEC_OUT "$secuencia\n";
 	close(SEC_OUT);
 
-	open (OUT, ">plist".$secuencia) || print "No se pudo crear el archivo de salida\n";
+	open (OUT, ">plist".$secuencia) || DEBUG "No se pudo crear el archivo de salida\n";
 }
 
 #checkeo si el usuario a ingresado archivos
@@ -342,7 +319,7 @@ if((!(@array_archivos_beneficiarios))&&(!(@array_archivos_benerro))){
 		closedir(DIR);
 	}
 	else{
-		print "El path de archivos postulados es inexistente\n";
+		DEBUG "El path de archivos postulados es inexistente\n";
 	}
 }
 
@@ -357,7 +334,7 @@ for (@array_codigos_de_beneficio) { $es_codigo_de_beneficio_solicitado{$_} = 1 }
 
 if (($procesar_aceptados)||($procesar_pendientes)){
 	foreach $archivo (@array_archivos_beneficiarios){
-		open (BENEF, $path_recibidos . $archivo) || print "No existe el achivo ".$path_recibidos."$archivo\n";
+		open (BENEF, $path_recibidos . $archivo) || DEBUG "No existe el achivo ".$path_recibidos."$archivo\n";
 		while (<BENEF>) {
 				chomp; # quito el caracter de corte de linea al final de linea
 
@@ -377,24 +354,24 @@ if (($procesar_aceptados)||($procesar_pendientes)){
 
 							#salida por pantalla
 							if ($salida_por_pantalla){
-								print "Beneficio: $codigo_de_beneficio";
-								print " Agencia: $agencia";
-								print " Cuil: $cuil";
-								print " Apellido: $apellido";
-								print " Provincia: $provincia";
-								print " Estado: $estado";
-								print " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
+								DEBUG "Beneficio: $codigo_de_beneficio";
+								DEBUG " Agencia: $agencia";
+								DEBUG " Cuil: $cuil";
+								DEBUG " Apellido: $apellido";
+								DEBUG " Provincia: $provincia";
+								DEBUG " Estado: $estado";
+								DEBUG " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
 							}
 								
 							#salida por archivo
 							if ($salida_por_archivo){
-								print OUT "Beneficio: $codigo_de_beneficio";
-								print OUT " Agencia: $agencia";
-								print OUT " Cuil: $cuil";
-								print OUT " Apellido: $apellido";
-								print OUT " Provincia: $provincia";
-								print OUT " Estado: $estado";
-								print OUT " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
+								DEBUG OUT "Beneficio: $codigo_de_beneficio";
+								DEBUG OUT " Agencia: $agencia";
+								DEBUG OUT " Cuil: $cuil";
+								DEBUG OUT " Apellido: $apellido";
+								DEBUG OUT " Provincia: $provincia";
+								DEBUG OUT " Estado: $estado";
+								DEBUG OUT " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
 							}
 						}
 					}
@@ -408,7 +385,7 @@ if (($procesar_aceptados)||($procesar_pendientes)){
 
 if ($procesar_rechazados){
 	foreach $archivo (@array_archivos_benerro){
-		open (BENERRO, $path_recibidos . $archivo) || print "No existe el achivo ".$path_recibidos."$archivo\n";
+		open (BENERRO, $path_recibidos . $archivo) || DEBUG "No existe el achivo ".$path_recibidos."$archivo\n";
 		while (<BENERRO>) {
 				chomp; # quito el caracter de corte de linea al final de linea
 
@@ -426,24 +403,24 @@ if ($procesar_rechazados){
 
 						#salida por pantalla
 						if ($salida_por_pantalla){
-							print "Beneficio: $codigo_de_beneficio";
-							print " Agencia: $agencia";
-							print " Cuil: $cuil";
-							print " Apellido: $apellido";
-							print " Provincia: $provincia";
-							print " Estado: rechazado";
-							print " Fecha pedida de Alta: $fecha_pedida_alta\n";
+							DEBUG "Beneficio: $codigo_de_beneficio";
+							DEBUG " Agencia: $agencia";
+							DEBUG " Cuil: $cuil";
+							DEBUG " Apellido: $apellido";
+							DEBUG " Provincia: $provincia";
+							DEBUG " Estado: rechazado";
+							DEBUG " Fecha pedida de Alta: $fecha_pedida_alta\n";
 						}
 
 						#salida por archivo
 						if ($salida_por_archivo){
-							print OUT "Beneficio: $codigo_de_beneficio";
-							print OUT " Agencia: $agencia";
-							print OUT " Cuil: $cuil";
-							print OUT " Apellido: $apellido";
-							print OUT " Provincia: $provincia";
-							print OUT " Estado: rechazado";
-							print OUT " Fecha pedida de Alta: $fecha_pedida_alta\n";
+							DEBUG OUT "Beneficio: $codigo_de_beneficio";
+							DEBUG OUT " Agencia: $agencia";
+							DEBUG OUT " Cuil: $cuil";
+							DEBUG OUT " Apellido: $apellido";
+							DEBUG OUT " Provincia: $provincia";
+							DEBUG OUT " Estado: rechazado";
+							DEBUG OUT " Fecha pedida de Alta: $fecha_pedida_alta\n";
 						}
 					}
 				}
@@ -474,11 +451,11 @@ if (($imprimir_matriz_de_control)&&($total_postulantes)){
 		}
 	}
 	if ($salida_por_pantalla){
-		print "\n";
+		DEBUG "\n";
 	}
 	if ($salida_por_archivo)
 	{
-		print OUT "\n";
+		DEBUG OUT "\n";
 	}
 	
 
@@ -513,12 +490,12 @@ if (($imprimir_matriz_de_control)&&($total_postulantes)){
 		}
 		if ($salida_por_pantalla){
 			printf ("%-10d",$hash_provincia{$provincia});
-			print "\n";
+			DEBUG "\n";
 		}
 		if ($salida_por_archivo)
 		{
 			printf OUT "%-10d",$hash_provincia{$provincia};
-			print OUT "\n";
+			DEBUG OUT "\n";
 		}
 	}
 
@@ -541,12 +518,12 @@ if (($imprimir_matriz_de_control)&&($total_postulantes)){
 	}
 	if ($salida_por_pantalla){
 		printf ("%-10d",$total_postulantes);
-		print "\n";
+		DEBUG "\n";
 	}
 	if ($salida_por_archivo)
 	{
 		printf OUT "%-10d",$total_postulantes;
-		print OUT "\n";
+		DEBUG OUT "\n";
 
 		close(OUT);
 	}
