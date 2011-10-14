@@ -308,6 +308,7 @@ function crearDirectorios() {
 #Parametros:
 #	1 - Archivo a mover
 #	2 - Path destino del archivo
+#	3 - Permisos del archivo
 function moverArchivo() {
 	if [ ! -f $1 ]; then 
 		loguear "E" "No se puede mover el archivo ${1##*/}. Archivo inexistente" 
@@ -316,10 +317,12 @@ function moverArchivo() {
 		loguear "E" "No se puede mover el archivo ${1##*/}. El directorio $2 no existe"
 		return 1
 	else
-		mv -u $1 $2 2>/dev/null
+		mv $1 $2 2>/dev/null
 		if [ $? -ne 0 ]; then
 			loguear "E" "No se pudo mover el archivo ${1##*/}"
 			return 1
+		else
+			chmod "$3" "$2/${1##*/}" 2>/dev/null
 		fi
 	fi
 }
@@ -327,35 +330,35 @@ function moverArchivo() {
 function moverArchivos() {
 	echo "Moviendo archivos..."
 
-	moverArchivo "$GRUPO/$INSTDIR/encuestas.mae" "$GRUPO/$MAEDIR"
-	moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR"
-	moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR"
-	moverArchivo "$GRUPO/$INSTDIR/errores.mae" "$GRUPO/$MAEDIR"
-	moverArchivo "$GRUPO/$INSTDIR/moverC.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/loguearC.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/StartD.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/StopD.sh" "$GRUPO/$LIBDIR"
-	moverArchivo "$GRUPO/$INSTDIR/mirarC.sh" "$GRUPO/$LIBDIR"
+	moverArchivo "$GRUPO/$INSTDIR/encuestas.mae" "$GRUPO/$MAEDIR" "444"
+	moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR" "444"
+	moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR" "444"
+	moverArchivo "$GRUPO/$INSTDIR/errores.mae" "$GRUPO/$MAEDIR" "444"
+	moverArchivo "$GRUPO/$INSTDIR/moverC.sh" "$GRUPO/$LIBDIR" "775"
+	moverArchivo "$GRUPO/$INSTDIR/loguearC.sh" "$GRUPO/$LIBDIR" "775"
+	moverArchivo "$GRUPO/$INSTDIR/StartD.sh" "$GRUPO/$LIBDIR" "775"
+	moverArchivo "$GRUPO/$INSTDIR/StopD.sh" "$GRUPO/$LIBDIR" "775"
+	moverArchivo "$GRUPO/$INSTDIR/mirarC.sh" "$GRUPO/$LIBDIR" "775"
 
-	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR"
+	moverArchivo "$GRUPO/$INSTDIR/iniciarC.sh" "$GRUPO/$BINDIR" "775"
 	if [ $? -eq 0 ]; then
 		INICIARU=$USER
 		INICIARF=`date +"%F %T"`
 	fi
 
-	moverArchivo "$GRUPO/$INSTDIR/listarC.pl" "$GRUPO/$BINDIR"
+	moverArchivo "$GRUPO/$INSTDIR/listarC.pl" "$GRUPO/$BINDIR" "775"
 	if [ $? -eq 0 ]; then
 		LISTARU=$USER
 		LISTARF=`date +"%F %T"`
 	fi
 
-	moverArchivo "$GRUPO/$INSTDIR/sumarC.sh" "$GRUPO/$BINDIR"
+	moverArchivo "$GRUPO/$INSTDIR/sumarC.sh" "$GRUPO/$BINDIR" "775"
 	if [ $? -eq 0 ]; then
 		SUMARU=$USER
 		SUMARF=`date +"%F %T"`
 	fi
 
-	moverArchivo "$GRUPO/$INSTDIR/detectarC.sh" "$GRUPO/$BINDIR"
+	moverArchivo "$GRUPO/$INSTDIR/detectarC.sh" "$GRUPO/$BINDIR" "775"
 	if [ $? -eq 0 ]; then
 		DETECTARU=$USER
 		DETECTARF=`date +"%F %T"`
@@ -436,7 +439,7 @@ function detectarInstalacion {
 	for archivo in ${archivosAVerificar[*]}
 	do
 		if [ -f "$archivo" ]; then
-			owner=`ls $archivo -l | awk '{print $3 " " $6 " " $7}'`
+			owner=`ls -l $archivo | awk '{print $3 " " $6 " " $7}'`
 			instalados[$cantInst]="${archivo##*/} $owner"
 			let cantInst=$cantInst+1
 		else
