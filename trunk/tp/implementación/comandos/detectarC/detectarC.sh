@@ -2,19 +2,18 @@
 # detectarC
 
 # Trap para QUIT signal (3) y KILL (1)
-trap 'exit' 1 # Acá habría que hacer algo más?
-trap 'exit' 3 # Acá habría que hacer algo más?
+#trap 'exit' 1 # Acá habría que hacer algo más?
+#trap 'exit' 3 # Acá habría que hacer algo más?
 #ps ux | awk '/detectar/ && !/awk/ {print $2}'
 
 # Variables
-DIR_ARRIBOS="arribos"
-PID_FILE=".detectarC.pid"
-MAEENC="encuestadores.mae"
-RUTA_INICIAL=`pwd`
-DIR_APROBADOS="$RUTA_INICIAL/preparados"
-DIR_RECHAZADOS="$RUTA_INICIAL/rechazados"
-RUTA_LOGUEARC="$RUTA_INICIAL/../../funciones/loguearC/"
-RUTA_MOVERC="$RUTA_INICIAL/../../funciones/moverC/"
+#PID_FILE=".detectarC.pid"
+MAEENC="$DATAMAE/encuestadores.mae"
+#RUTA_INICIAL=`pwd`
+DIR_APROBADOS="$GRUPO/preparados"
+DIR_RECHAZADOS="$GRUPO/rechazados"
+RUTA_LOGUEARC="$LIBDIR/"
+RUTA_MOVERC="$LIBDIR/"
 
 # validarFecha(fecha, fechaDesde, fechaHasta)
 #
@@ -40,8 +39,8 @@ function validarFecha {
     fi
 }
 
-echo $$ > $PID_FILE # Guardo el pid en un archivo
-cd $DIR_ARRIBOS
+#echo $$ > $PID_FILE # Guardo el pid en un archivo
+cd $GRUPO/$ARRIDIR
 
 
 # Tiene que correr indefinidamente
@@ -62,7 +61,7 @@ while [ $COUNTER -eq 1 ]; do
 			# El FORMATO es valido (todavia hay que chequear que sea valida la 
 			# fecha y el userid
 			USERID_ENTRANTE=`echo $file | cut -d . -f 3`
-			exec < "../$MAEENC"
+			exec < "$GRUPO/$DATAMAE/encuestadores.mae"
 			while read linea; do
 				if [ $USERID_ENTRANTE = `echo $linea | cut -b 1-8` ]; then
 				    ENCONTRADO=1
@@ -74,19 +73,19 @@ while [ $COUNTER -eq 1 ]; do
 			done
 			if [ $ENCONTRADO -eq 1 ]; then
 			    if [ $FECHA_VALIDA -eq 1 ]; then
-			        $RUTA_MOVERC/moverC.sh -o $file -d $DIR_APROBADOS -c "$0"
-				    #$RUTA_LOGUEARC/loguearC.sh -w -t I -m "$MENSAJE_ACEPTADO $file" -p "$0"
+			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_APROBADOS -c "$0"
+				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_ACEPTADO $file" -p "$0"
 			    else
-			        $RUTA_MOVERC/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-				    #$RUTA_LOGUEARC/loguearC.sh -w -t I -m "$MENSAJE_FECHA_INVALIDA $file" -p "$0"
+			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
+				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FECHA_INVALIDA $file" -p "$0"
 			    fi
 			else
-			    $RUTA_MOVERC/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-			    #$RUTA_LOGUEARC/loguearC.sh -w -t I -m "$MENSAJE_USUARIO_INVALIDO $file" -p "$0"
+			    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
+			    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_USUARIO_INVALIDO $file" -p "$0"
 			fi
 		else
-		    $RUTA_MOVERC/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-		    #$RUTA_LOGUEARC/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "$0"
+		    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
+		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "$0"
 		fi
 	done
 	sleep 30

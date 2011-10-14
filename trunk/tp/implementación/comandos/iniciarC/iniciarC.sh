@@ -131,7 +131,7 @@ function checkearInstalacion(){
 }
 
 function otorgarPermisoEjecucion(){
-	chmod +x StartD.sh
+	chmod +x ../lib/StartD.sh
 	chmod +x detectarC.sh
 }
 
@@ -144,7 +144,7 @@ function checkearDetectarC(){
 }
 
 function iniciarDetectarC(){
-	StartD.sh detectarC.sh
+	../lib/StartD.sh ../bin/detectarC.sh
 	PIDDETECTARC=`ps | grep "detectarC.sh" | head -1 | awk '{print $1 }'`	
 	if [ "$PIDDETECTARC" != "" ]; then
 		return $PIDDETECTARC

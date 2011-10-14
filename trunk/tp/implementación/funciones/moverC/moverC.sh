@@ -3,8 +3,6 @@
 # moverC.sh
 # Funcion para movimiento de archivos
 
-RUTA_GRUPO="/home/juani/Desktop/SO"
-RUTA_MAE="$RUTA_GRUPO/mae"
 RUTA_INICIAL=`pwd`
 COMANDO="Comando no especificado"
 
