@@ -39,29 +39,6 @@
 #
 # Formatos de los archivos maestros
 #
-# Encuestas: $grupo/mae/encuestas.mae
-#    Campo                  | Descripción
-# ----------------------------------------
-# 1. Código de encuesta     | 3 caracteres
-# 2. Nombre de la encuesta  | N caracteres
-# 3. Cantidad de preguntas  | numérico 
-# 4. Verde-Rango Inicial    | numérico 
-# 5. Verde-Rango Final      | numérico 
-# 6. Amarillo-Rango Inicial | numérico 
-# 7. Amarillo-Rango Final   | numérico 
-# 8. Rojo-Rango Inicial     | numérico 
-# 9. Rojo-Rango Final       | numérico 
-#
-# Separador de campos: , coma.
-#
-# Ejemplos:
-#  E01, Estándar para nuevos clientes,9,20,999,10,19,-999,9
-#  E02, Satisfacción de clientes,7,55,999,35,54,-999,34
-#  E03, Cambio de categoria,3,12,999,8,11,-999,7
-#  E04, Búsqueda de prospectos,12,120,999,88,119,-999,87
-#  E05, Calificación de oportunidades,5,50,999,30,49,-999,29
-#
-#
 # Preguntas: $grupo/mae/preguntas.mae
 #   Campo            | Descripción o valor
 # ---------------------------------------------------------------
@@ -110,7 +87,7 @@
 # 2. Fecha de realización          | Fecha del nombre del archivo de encuestas realizadas
 # 3. Nro. de Encuesta Realizada    | del archivo de encuestas realizadas
 # 4. Código de encuesta            | del archivo de encuestas realizadas
-# 5. Puntaje Obtenido              | Numérico, Campo calculado en este proceso
+# 5. Puntaje Obtenido              | Numérico, campo calculado por sumarC
 # 6. Código de cliente o prospecto | del archivo de encuestas realizadas
 # 7. Sitio de Relevamiento         | del archivo de encuestas realizadas
 # 8. Modalidad de encuesta         | del archivo de encuestas realizadas
@@ -160,13 +137,16 @@ my $modalidad = 0;                  # -m, --modalidad
 my $mostrarResultadosEnPantalla = 0;# -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 my $guardarResultadosEnArchivo = 0; # -e (resuelve y emite un informe)
 
+# Variables en las que almacenaré datos obtenidos de los archivos maestros
+# Son utilizadas para luego poder realizar los "querys"
+my @infoMaestros;
+#my @infoMaestros["encuestas"];
+#my @infoMaestros["encuestadores"];
+#my @infoMaestros["modalidades"];
 
-use Switch;
-
-
-$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
-
-
+#
+# Funciones
+#
 sub DEBUG{
 	print $_[0];
 }
@@ -176,7 +156,12 @@ sub mostrarAyuda{
 }
 
 sub procesarArgumentos{
+	use Switch;
+
+	$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+
 	DEBUG "Parametros: ";
+	
 	foreach $param (@_) {
 	
 	
@@ -262,10 +247,81 @@ sub procesarArgumentos{
 	return 0;
 }
 
+sub obtenerInfoEncuestasMaestras{
+	
+	$pathArchivosMaestros = "./";
+	$archivoEncuestadoresMaestro = "encuestas.mae";
+	
+	$pathYNombreArchivo = $pathArchivosMaestros . $archivoEncuestadoresMaestro;
+	
+	if(open (FILE_HANDLER, $pathYNombreArchivo)){
+		while (<FILE_HANDLER>) {
+			chomp; # quito el caracter de corte de linea al final de linea
+
+#
+# Formato del archivo maestro: $grupo/mae/encuestas.mae
+#
+#    Campo                  | Descripción
+# ----------------------------------------
+# 1. Código de encuesta     | 3 caracteres
+# 2. Nombre de la encuesta  | N caracteres
+# 3. Cantidad de preguntas  | numérico 
+# 4. Verde-Rango Inicial    | numérico 
+# 5. Verde-Rango Final      | numérico 
+# 6. Amarillo-Rango Inicial | numérico 
+# 7. Amarillo-Rango Final   | numérico 
+# 8. Rojo-Rango Inicial     | numérico 
+# 9. Rojo-Rango Final       | numérico 
+#
+# Separador de campos: , coma.
+#
+# Ejemplos:
+#  E01, Estándar para nuevos clientes,9,20,999,10,19,-999,9
+#  E02, Satisfacción de clientes,7,55,999,35,54,-999,34
+#  E03, Cambio de categoria,3,12,999,8,11,-999,7
+#  E04, Búsqueda de prospectos,12,120,999,88,119,-999,87
+#  E05, Calificación de oportunidades,5,50,999,30,49,-999,29
+#
+			(
+
+				$codigoEncuesta,                                                    # 1. Código de encuesta     | 3 caracteres
+				$null,                                                              # 2. Nombre de la encuesta  | N caracteres
+				$null,                                                              # 3. Cantidad de preguntas  | numérico 
+				$rangoVerdeInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["verde"]["inicial"],    # 4. Verde-Rango Inicial    | numérico 
+				$rangoVerdeFinal, #$infoMaestros["encuestas"][$codigoEncuesta]["verde"]["final"],      # 5. Verde-Rango Final      | numérico 
+				$rangoAmarilloInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["amarillo"]["inicial"], # 6. Amarillo-Rango Inicial | numérico 
+				$rangoAmarilloFinal, #$infoMaestros["encuestas"][$codigoEncuesta]["amarillo"]["final"],   # 7. Amarillo-Rango Final   | numérico 
+				$rangoRojoInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["rojo"]["inicial"],     # 8. Rojo-Rango Inicial     | numérico 
+				$rangoRojoFinal #$infoMaestros["encuestas"][$codigoEncuesta]["rojo"]["final"]       # 9. Rojo-Rango Final       | numérico 
+
+			)=split(",");
+			
+			DEBUG($codigoEncuesta." - ".$rangoAmarilloFinal." - ".$rangoAmarilloInicial."\n");
+		}
+		close(FILE_HANDLER);
+	}else{
+		DEBUG "No existe el achivo ".$pathYNombreArchivo."\n";
+		return 1;
+	}
+
+	return 0;
+}
+
+sub obtenerEncuestadores{
+	
+}
+
+sub obtenerNrosEncuestas{
+	
+}
+
+sub obtenerModalidades{}
 
 
 if(procesarArgumentos(@ARGV) != 0){
 	exit;
+}else{
+	obtenerInfoEncuestasMaestras();
 }
 
 
