@@ -25,8 +25,9 @@
 #  -m, --modalidad
 #  -h, --help
 #
-# Valores para los parámetros e, c, m:  1, 2, n, * (todos)
-# Valores para el parámetro n:          nro de encuesta, un rango de ellas, * (todos)
+# Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)
+# Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)
+# Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial)
 #
 # En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
 #
@@ -62,20 +63,6 @@
 #  221, No posee referencias,-,MEDIA
 #  230, Está buscando dar de baja servicios,-,BAJA
 #  231, Esta en el límite del area de cobertura,-,BAJA
-#
-#
-# Encuestadores: $grupo/mae/encuestadores.mae
-#    Campo                  | Descripción
-# ----------------------------------------
-# 1. Userid del encuestador | 8 caracteres
-# 2. Nombre del encuestador | N caracteres
-# 3. CUIL                   | 11 numérico 
-# 4. Valido desde           | fecha
-# 5. Valido hasta           | fecha 
-#
-# Separador de campos: , coma
-#
-# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
 #
 
 
@@ -308,14 +295,30 @@ sub obtenerInfoEncuestasMaestras{
 }
 
 sub obtenerEncuestadores{
-	
+#
+# Encuestadores: $grupo/mae/encuestadores.mae
+#    Campo                  | Descripción
+# ----------------------------------------
+# 1. Userid del encuestador | 8 caracteres
+# 2. Nombre del encuestador | N caracteres
+# 3. CUIL                   | 11 numérico 
+# 4. Valido desde           | fecha
+# 5. Valido hasta           | fecha 
+#
+# Separador de campos: , coma
+#
+# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
+#
+
 }
 
 sub obtenerNrosEncuestas{
 	
 }
 
-sub obtenerModalidades{}
+sub obtenerModalidades{
+	
+}
 
 
 if(procesarArgumentos(@ARGV) != 0){
