@@ -203,15 +203,16 @@ logusuario=""
 logmode="view"
 logviewlinieas=""
 
-
+#Entweder view oder write!
 # Parameter parsen
-while getopts t:p:m:wn:s: option
+while getopts t:p:m:wvn:s: option
 do	
 case "$option" in
   	t)	logtipo=$OPTARG;;
   	p)	logprog=$OPTARG;;
 	m)	logmsg=$OPTARG;;
 	w)	logmode="write";;
+	v)	logmode="view";;
 	n)	logviewlineas=$OPTARG;;
 	[?])	echo "Opciones posibles: t p m w"
 	esac

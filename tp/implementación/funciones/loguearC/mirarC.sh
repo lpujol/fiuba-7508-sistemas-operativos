@@ -8,4 +8,4 @@
 #
 # last change: 2011-09-25
 
-./loguearC.sh $1 $2 $3 $4 $5 $6 $7 $8
+./loguearC.sh -v $1 $2 $3 $4 $5 $6 $7 $8
