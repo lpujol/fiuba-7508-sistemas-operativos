@@ -69,8 +69,22 @@ logusuario=$USER
 #Ein Format für Zeit
 logtime=`date "+%y-%m-%d_%H-%M-%S"`
 
-#Alternativ Sekunden seit 1970, ist kürzer
-#date '+%s'
+#Existe Archivo de log?
+logfile=$LOGDIR/$logprog.$LOGEXT 
+
+if [ \! -w $logfile ]
+  then
+  #Existe el directorio?
+  if [ \! -d $LOGDIR ]
+    then
+    mkdir $LOGDIR
+  fi
+ 
+  #Grabar mensaje en log
+  lognewentry="$logtime,$logusuario,A,998:Log no existe, crear nuevo archivo de log: $logfile"
+  grabarLog "$lognewentry" "$logfile"
+fi
+
 
 #Tipo de Mensaje
 #Posibilidad a usar solo eg 'I', o con numero
@@ -85,29 +99,20 @@ if [ ${#logtipo2} -gt 0 ]
   if [ \! -f "$DATAMAE/errores.mae" ]
     then
     echo No encuentro el maestro de errores
+  #Nachricht irgendwo dokumentieren, andere haben ja auch filesize dinger
+  logfaltamae="$logtime,$logusuario,E,999:LoguearC:Maestro de errores no existe, siguiente Mensaje sin este información"
+  grabarLog "$logfaltamae" "$logfile"
+  logmsg="$logtipo2: $logmsg"
+  else 
+  logmsg=`sed -n "s/^\($logtipo2\),\(.*\)/\1: \2: $logmsg/p" "$DATAMAE/errores.mae"`
   fi
-  logmsg=`sed -n "s/^\($logtipo2\),\(.*\)/\1: \2 $logmsg/p" "$DATAMAE/errores.mae"`
+  
 fi
 
 #Parameterreihenfolge?
 
 #Datensatz schreiben
 logentry="$logtime,$logusuario,$logtipo,$logmsg"
-logfile=$LOGDIR/$logprog.$LOGEXT 
-
-#Existe Archivo de log?
-if [ \! -w $logfile ]
-  then
-  #Existe el directorio?
-  if [ \! -d $LOGDIR ]
-    then
-    mkdir $LOGDIR
-  fi
-  
-  #Grabar mensaje en log
-  lognewentry="$logtime,$logusuario,A,554:Log $logfile no existe, crear nuevo archivo de log"
-  grabarLog "$lognewentry" "$logfile"
-fi
 
 #Examinar tamano de archivo de log
 logsize=`stat -c "%s" $logfile`
@@ -165,7 +170,7 @@ else
 
  
 #Umgebungsvariablen, später löschen
-#grupo='/home/havoc/tpMy'
+#GRUPO='/home/havoc/tpMy'
 
 #DATAMAE="$GRUPO/mae"
 
