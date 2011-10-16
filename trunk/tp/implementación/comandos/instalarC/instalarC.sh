@@ -38,7 +38,7 @@ function toLower() {
 
 function loguear() {
 	logDate=`date "+%y-%m-%d_%H-%M-%S"` 
-	echo "$logDate,$USER,instalarC,$1,$2" >> $LOGFILE
+	echo "$logDate,$USER,$1,$2" >> $LOGFILE
 }
 
 function echoAndLog() {
@@ -311,15 +311,15 @@ function crearDirectorios() {
 #	3 - Permisos del archivo
 function moverArchivo() {
 	if [ ! -f $1 ]; then 
-		loguear "E" "No se puede mover el archivo ${1##*/}. Archivo inexistente" 
+		loguear "E" "200:Archivo inexistente: ${1##*/}" 
 		return 1
 	elif [ ! -d $2 ]; then
-		loguear "E" "No se puede mover el archivo ${1##*/}. El directorio $2 no existe"
+		loguear "E" "200:Directorio inexistente: $2"
 		return 1
 	else
 		mv $1 $2 2>/dev/null
 		if [ $? -ne 0 ]; then
-			loguear "E" "No se pudo mover el archivo ${1##*/}"
+			loguear "E" "210:No se pudo mover el archivo: ${1##*/}"
 			return 1
 		else
 			chmod "$3" "$2/${1##*/}" 2>/dev/null
