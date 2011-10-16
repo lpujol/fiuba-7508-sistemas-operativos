@@ -131,6 +131,7 @@ my %infoEncuestasMaestro = ();
 #my @infoMaestros["encuestadores"];
 #my @infoMaestros["modalidades"];
 
+
 #
 # Funciones
 #
@@ -241,13 +242,6 @@ sub obtenerInfoEncuestasMaestras{
 	
 	$pathYNombreArchivo = $pathArchivosMaestros . $archivoEncuestadoresMaestro;
 	
-	$verde_inicial=0;
-	$verde_final=0;
-	$amarillo_inicial=0;
-	$amarillo_final=0;
-	$rojo_inicial=0;
-	$rojo_final=0;
-	
 	if(open (FILE_HANDLER, $pathYNombreArchivo)){
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
@@ -285,7 +279,12 @@ sub obtenerInfoEncuestasMaestras{
 			$infoEncuestasMaestro{$codigoEncuesta}{"rojo-inicial"}     = $rojo_inicial; 
 			$infoEncuestasMaestro{$codigoEncuesta}{"rojo-final"}       = $rojo_final; 
 			
-			DEBUG($codigoEncuesta." - ".$verde_final." - ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}."\n");
+			DEBUG(
+				$codigoEncuesta.
+				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}.   " , ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}.
+				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-inicial"}." , ".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-final"}.
+				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-inicial"}.    " , ".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-final"}.
+				"\n");
 		}
 		close(FILE_HANDLER);
 	}else{
