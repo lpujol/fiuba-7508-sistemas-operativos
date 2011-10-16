@@ -27,7 +27,7 @@
 #
 # Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)
 # Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)
-# Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial)
+# Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles
 #
 # En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
 #
@@ -118,7 +118,7 @@ my @array_agencias;
 #
                                     # parámetro que lo controla
 my $encuestador = "";               # -enc, --encuestador
-my $codigoEncuesta = 0;             # -cod, --código-de-encuesta
+my $codigoEncuesta = "";             # -cod, --código-de-encuesta
 my $nroEncuesta = 0;                # -n, --nro-de-encuesta
 my $modalidad = 0;                  # -m, --modalidad
 my $mostrarResultadosEnPantalla = 0;# -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
@@ -126,7 +126,7 @@ my $guardarResultadosEnArchivo = 0; # -e (resuelve y emite un informe)
 
 # Variables en las que almacenaré datos obtenidos de los archivos maestros
 # Son utilizadas para luego poder realizar los "querys"
-my @infoMaestros;
+my %infoEncuestasMaestro = ();
 #my @infoMaestros["encuestas"];
 #my @infoMaestros["encuestadores"];
 #my @infoMaestros["modalidades"];
@@ -241,6 +241,13 @@ sub obtenerInfoEncuestasMaestras{
 	
 	$pathYNombreArchivo = $pathArchivosMaestros . $archivoEncuestadoresMaestro;
 	
+	$verde_inicial=0;
+	$verde_final=0;
+	$amarillo_inicial=0;
+	$amarillo_final=0;
+	$rojo_inicial=0;
+	$rojo_final=0;
+	
 	if(open (FILE_HANDLER, $pathYNombreArchivo)){
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
@@ -269,21 +276,16 @@ sub obtenerInfoEncuestasMaestras{
 #  E04, Búsqueda de prospectos,12,120,999,88,119,-999,87
 #  E05, Calificación de oportunidades,5,50,999,30,49,-999,29
 #
-			(
-
-				$codigoEncuesta,                                                    # 1. Código de encuesta     | 3 caracteres
-				$null,                                                              # 2. Nombre de la encuesta  | N caracteres
-				$null,                                                              # 3. Cantidad de preguntas  | numérico 
-				$rangoVerdeInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["verde"]["inicial"],    # 4. Verde-Rango Inicial    | numérico 
-				$rangoVerdeFinal, #$infoMaestros["encuestas"][$codigoEncuesta]["verde"]["final"],      # 5. Verde-Rango Final      | numérico 
-				$rangoAmarilloInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["amarillo"]["inicial"], # 6. Amarillo-Rango Inicial | numérico 
-				$rangoAmarilloFinal, #$infoMaestros["encuestas"][$codigoEncuesta]["amarillo"]["final"],   # 7. Amarillo-Rango Final   | numérico 
-				$rangoRojoInicial, #$infoMaestros["encuestas"][$codigoEncuesta]["rojo"]["inicial"],     # 8. Rojo-Rango Inicial     | numérico 
-				$rangoRojoFinal #$infoMaestros["encuestas"][$codigoEncuesta]["rojo"]["final"]       # 9. Rojo-Rango Final       | numérico 
-
-			)=split(",");
+			($codigoEncuesta, $null, $null, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
 			
-			DEBUG($codigoEncuesta." - ".$rangoAmarilloFinal." - ".$rangoAmarilloInicial."\n");
+			$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}    = $verde_inicial;
+			$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}      = $verde_final; 
+			$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-inicial"} = $amarillo_inicial; 
+			$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-final"}   = $amarillo_final; 
+			$infoEncuestasMaestro{$codigoEncuesta}{"rojo-inicial"}     = $rojo_inicial; 
+			$infoEncuestasMaestro{$codigoEncuesta}{"rojo-final"}       = $rojo_final; 
+			
+			DEBUG($codigoEncuesta." - ".$verde_final." - ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}."\n");
 		}
 		close(FILE_HANDLER);
 	}else{
