@@ -232,6 +232,6 @@ elif [ $logmode = "view" ]
   viewLog
 fi
 
-
-echo Listo
+#Termina sin error
 exit 0
+
