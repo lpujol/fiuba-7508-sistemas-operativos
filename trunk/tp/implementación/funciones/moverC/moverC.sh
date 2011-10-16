@@ -46,7 +46,7 @@ function generarRutaDestino
 function chequearExistenciaArchivoOrigen
 {
 	if [ ! -f "$RUTA_ORIGEN" ];	then
-     #   ../loguearC/loguearC.sh -w -t E200 -m "RUTA_ORIGEN" -p $COMANDO
+     #   ../loguearC/loguearC.sh -w -t E200 -m "RUTA_ORIGEN" -p $COMANDO 
         exit -1
 	fi
 }
