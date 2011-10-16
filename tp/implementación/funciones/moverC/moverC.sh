@@ -46,7 +46,7 @@ function generarRutaDestino
 function chequearExistenciaArchivoOrigen
 {
 	if [ ! -f "$RUTA_ORIGEN" ];	then
-     #   ../loguearC/loguearC.sh -w -t E200 -m "El archivo origen no existe" -p $COMANDO
+     #   ../loguearC/loguearC.sh -w -t E200 -m "RUTA_ORIGEN" -p $COMANDO
         exit -1
 	fi
 }
@@ -54,7 +54,7 @@ function chequearExistenciaArchivoOrigen
 function chequearExistenciaRutaDestino
 {
 	if [ ! -d "$RUTA_DESTINO" ];	then
-	#	../loguearC/loguearC.sh -w -t E201 -m "La ruta de destino no existe" -p $COMANDO
+	#	../loguearC/loguearC.sh -w -t E201 -m "RUTA_DESTINO" -p $COMANDO
         exit -2
 	fi
 }
