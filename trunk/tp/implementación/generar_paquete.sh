@@ -3,7 +3,7 @@
 # Script para generar el paquete de instalacion a partir de nuestra estructura
 # de carpetas
 #
-# This script generates the installation package given out folder structure.
+# This script generates the installation package given our folder structure.
 
 NOMBRE="tp-grupo01"
 
