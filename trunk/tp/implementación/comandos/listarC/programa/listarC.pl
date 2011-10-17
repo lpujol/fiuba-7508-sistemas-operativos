@@ -26,10 +26,12 @@
 #  -n, --nro-de-encuesta
 #  -m, --modalidad
 #  -h, --help
+#  -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas)
 #
 # Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)
 # Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)
 # Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles
+# Valores posibles para el parámetro a:              x-cod, x-enc o x-ambos
 #
 # En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
 #
@@ -49,9 +51,7 @@ my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
 my $filtroSeleccionModalidad = "";      # -m, --modalidad
 my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
-
-
-my $agruparEncuestasPorEncuestador = 1; # esto debería poder setearse a través de algún nuevo parámetro del programa
+my $agrupamiento = "x-ambos";           # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "x-ambos")
 
 
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
@@ -104,13 +104,24 @@ sub mostrarAyuda{
 	print " -cod, --código-de-encuesta\n";
 	print " -n, --nro-de-encuesta\n";
 	print " -m, --modalidad\n";
+	print " -a, --agrupamiento\n";
 	print " -h, --help\n";
 	
 	print "\n";
 	
-	print "Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)\n";
-	print "Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)\n";
-	print "Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles\n";
+	print "Valores posibles para:\n";
+	print " * los parámetros enc, cod, m:  1, 2, n, * (todos)\n";
+	print " * el parámetro n:              nro de encuesta, un rango de ellas, * (todos)\n";
+	print " * el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles\n";
+	print " * el parámetro a:              x-cod, x-enc o x-ambos\n";
+	
+	print "\n";
+
+	print "Valores default para:\n";
+	print " * los parámetros enc, cod, m:  * (todos)\n";
+	print " * el parámetro n:              * (todos)\n";
+	print " * el parámetro m:              todas las modalidades\n";
+	print " * el parámetro a:              x-ambos\n";
 	
 	print "\n";
 	
@@ -123,7 +134,7 @@ sub mostrarAyuda{
 	print " -e (resuelve y emite un informe)\n";
 	print "O la combinación de ellas.\n";
 	
-	print "\n";
+	print "\n==== FIN AYUDA ====\n";
 }
 
 # recibe @ARGV
@@ -160,6 +171,11 @@ sub procesarArgumentos{
 						$estado_procesador_de_argumentos = "recibiendo-valor-modalidad";
 					}
 			
+					case["-a", "--agrupamiento"]{
+						DEBUG "\$param = $param\n";
+						$estado_procesador_de_argumentos = "recibiendo-valor-agrupamiento";
+					}
+			
 					case["-h", "--help"]{
 						DEBUG "\$param = $param\n";
 						mostrarAyuda();
@@ -175,7 +191,7 @@ sub procesarArgumentos{
 						DEBUG "\$param = $param\n";
 						$guardarResultadosEnArchivo = 1;
 					}
-			
+					
 					else{
 						DEBUG "ERROR: argumento desconocido!, \$param=$param\n";
 						return 1;
@@ -201,6 +217,10 @@ sub procesarArgumentos{
 			case("recibiendo-valor-modalidad"){
 				$filtroSeleccionModalidad = $param;
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+			
+			case("recibiendo-valor-agrupamiento"){
+				$agrupamiento = $param;
 			}
 	
 			else{
@@ -348,6 +368,38 @@ sub obtenerColorPuntaje{
 	return $color;
 }
 
+# recibe $encuestador, $codigoEncuesta
+sub obtenerGrupoDeOrdenamiento{
+	use Switch;
+	
+	$encuestador = $_[0];
+	$codigoEncuesta = $_[1];
+	
+	$grupoDeOrdenamiento = "";
+	
+	switch($agrupamiento){
+		case ("x-cod"){
+			$grupoDeOrdenamiento = $codigoEncuesta;
+		}
+		
+		case ("x-enc"){
+			$grupoDeOrdenamiento = $encuestador;
+		}
+		
+		case ("x-ambos"){
+			$grupoDeOrdenamiento = $encuestador . "." . $codigoEncuesta;
+		}
+		
+		else{
+			MOSTRAR_ERROR("El modo de agrupamiento $agrupamiento es inválido.");
+			exit 1;
+		}
+	}
+	
+	DEBUG "grupo encuesta-encuestador?: $grupoDeOrdenamiento";
+	return $grupoDeOrdenamiento;
+}
+
 #necesita $encuestasSeleccionadas{}{}
 #recibe $encuestador, $codigoEncuesta, $puntajeObtenido
 sub agregarEncuesta{
@@ -355,19 +407,13 @@ sub agregarEncuesta{
 	$codigoEncuesta = $_[1];
 	$puntajeObtenido = $_[2];
 	
-	$grupo = $codigoEncuesta;
+	$grupoDeOrdenamiento = obtenerGrupoDeOrdenamiento($encuestador, $codigoEncuesta);
 	
-	if($agruparEncuestasPorEncuestador == 1){
-		$grupo .= ("." . $encuestador);
-	}
-	DEBUG "grupo encuesta-encuestador?: $grupo";
-
-	$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
-	DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
+	$encuestasSeleccionadas{$grupoDeOrdenamiento}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+	DEBUG "$encuestasSeleccionadas{$grupoDeOrdenamiento}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
 }
 
 sub obtenerInfoEncuestasMaestras{
-
 	#
 	# Formato del archivo maestro: $grupo/mae/encuestas.mae
 	#
@@ -422,24 +468,6 @@ sub obtenerInfoEncuestasMaestras{
 	}
 
 	return 0;
-}
-
-sub obtenerEncuestadores{
-	#
-	# Encuestadores: $grupo/mae/encuestadores.mae
-	#    Campo                  | Descripción
-	# ----------------------------------------
-	# 1. Userid del encuestador | 8 caracteres
-	# 2. Nombre del encuestador | N caracteres
-	# 3. CUIL                   | 11 numérico 
-	# 4. Valido desde           | fecha
-	# 5. Valido hasta           | fecha 
-	#
-	# Separador de campos: , coma
-	#
-	# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
-	#
-
 }
 
 sub obtenerInfoEncuestasSumarizadas{
