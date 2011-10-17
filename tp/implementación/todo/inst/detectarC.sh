@@ -39,6 +39,14 @@ function validarFecha {
     fi
 }
 
+function chequearProcesoSumarC {
+    PID_SUMARC=`ps | grep "sumarC.sh" | head -1 | awk '{print $1 }'`	
+	if [ "$PID_SUMARC" != "" ]; then
+	    return $PID_SUMARC
+	fi 
+	return 0
+}
+
 #echo $$ > $PID_FILE # Guardo el pid en un archivo
 cd $GRUPO/$ARRIDIR
 
@@ -88,5 +96,19 @@ while [ $COUNTER -eq 1 ]; do
 		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "$0"
 		fi
 	done
+	if [ "$(ls -A $DIR_APROBADOS)" ]; then
+	    chequearProcesoSumarC
+	    if [ $? -ne 0 ]; then
+		    echo "sumarC ya estaba en ejecución con PID $PID_SUMARC"
+    	else
+    	    $GRUPO/$BINDIR/sumarC.sh > /dev/null 2>&1
+    	    chequearProcesoSumarC
+	        if [ $? -ne 0 ]; then
+		        echo "sumarC corriendo con PID $PID_SUMARC"
+    		else
+		        echo "No se pudo ejecutar el script sumarC.sh"
+        	fi
+        fi
+	fi
 	sleep 30
 done
