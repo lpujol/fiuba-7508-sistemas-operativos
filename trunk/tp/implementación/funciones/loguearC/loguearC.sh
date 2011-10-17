@@ -15,6 +15,7 @@
 	#  2 - No puede escribir
 	#  3 - Ambiente no iniciado
 	#  4 - Parametro inválido
+	#  5 - Archivo de log no existente
 
 
 #Funcion para grabar en el log
@@ -50,7 +51,7 @@ function writeLog
 	#Hay parametro de nombre de programa?
 	existeParametro "$logprog" "Falta el nombre de la programa"
 	if [ `echo "$logprog" | grep -c "^[a-zA-Z0-9]*$"` -eq 0 ]; then
-	echo Nombre de programa inválido: $logprog 
+		echo Nombre de programa inválido: $logprog 
 		exit 4
 	fi
 
@@ -65,7 +66,7 @@ function writeLog
 	logtime=`date "+%y-%m-%d_%H-%M-%S"`
 
 	#Existe Archivo de log?
-	logfile=$LOGDIR/$logprog$LOGEXT 
+	logfile=$GRUPO/$LOGDIR/$logprog$LOGEXT 
 	if [ \! -w $logfile ]; then
 		#Existe el directorio?
 		if [ \! -d $LOGDIR ]; then
@@ -134,6 +135,7 @@ function viewLog
 
 	if [ \! -f $logfile ]; then
 		echo No encuentro el archivo $logfile
+		exit 5
 	fi
 
 	#Tipo de Mensaje
