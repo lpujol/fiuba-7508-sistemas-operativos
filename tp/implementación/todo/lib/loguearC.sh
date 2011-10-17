@@ -15,6 +15,7 @@
 	#  2 - No puede escribir
 	#  3 - Ambiente no iniciado
 	#  4 - Parametro inválido
+	#  5 - Archivo de log no existente
 
 
 #Funcion para grabar en el log
@@ -134,6 +135,7 @@ function viewLog
 
 	if [ \! -f $logfile ]; then
 		echo No encuentro el archivo $logfile
+		exit 5
 	fi
 
 	#Tipo de Mensaje
