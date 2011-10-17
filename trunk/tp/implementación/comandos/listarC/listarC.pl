@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+# Estoy en UTF8: sí
+
 #
 # $Id$
 #
@@ -104,7 +106,7 @@ my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
 my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
 my $filtroSeleccionModalidad = "";      # -m, --modalidad
 my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-my $guardarResultadosEnArchivo = 0;     # -e (resuelve y emite un informe)
+my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
 
 
 my $agruparEncuestasPorEncuestador = 1; # esto deberpoder setearse a trav고de alg򮠮uevo par⮥tro del programa
@@ -120,22 +122,33 @@ my %encuestasSeleccionadas = ();
 
 #
 # Variables de entorno
-my $pathArchivosMaestros = "./"; # = $grupo/mae
-my $pathArchivosYa = "./";       # = $grupo/ya
+my $pathArchivosMaestros = "./";   # = $grupo/mae
+my $pathArchivosYa = "./";         # = $grupo/ya
+my $pathArchivosResultados = "./"; # = $grupo/ya
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
-
+my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
 
 
 #
 # Funciones
 #
 sub DEBUG{
-	print @_;
+	# print @_;
 }
 
 sub MOSTRAR_EN_PANTALLA{
-	DEBUG @_;
+	print @_;
+}
+
+# recibe $idArchivo, $strAGuardar
+sub GUARDAR_EN_ARCHIVO{
+	$idArchivo = $_[0];
+	$strAGuardar = $_[1];
+
+	open(FILE_HANDLER_ARCHIVO_SALIDA, ">>".$pathYNombreArchivoResultados.$idArchivo);
+	print FILE_HANDLER_ARCHIVO_SALIDA $strAGuardar;
+	close(FILE_HANDLER_ARCHIVO_SALIDA);
 }
 
 sub mostrarAyuda{
@@ -321,8 +334,20 @@ sub obtenerColorPuntaje{
 	$codigoEncuesta = $_[0];
 	$puntajeObtenido = $_[1];
 	$color = "ERROR-color-desconocido";
+
+
+	# Using 'keys' in a 'foreach' loop
+	#  * This method has the advantage that it's possible to sort the output by key.
+	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
+	# foreach my $key ( keys %infoEncuestasMaestro ){
+
+	# Using 'each' in a 'while' loop
+	#  * This method's advantage is that it uses very little memory (every time 'each' is called it only returns a pair of (key, value) element).
+	#  * The disadvantage is that you can't order the output by key.
+	# while ( $key = each %infoEncuestasMaestro )
+
 	
-	foreach my $key ( keys %infoEncuestasMaestro ){
+	while ( $key = each %infoEncuestasMaestro ){
 		if($key eq $codigoEncuesta){
 			#DEBUG "key: $key, value: $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
 
@@ -353,6 +378,7 @@ sub obtenerColorPuntaje{
 	return $color;
 }
 
+#necesita $encuestasSeleccionadas{}{}
 #recibe $encuestador, $codigoEncuesta, $puntajeObtenido
 sub agregarEncuesta{
 	$encuestador = $_[0];
@@ -483,10 +509,8 @@ sub obtenerInfoEncuestasSumarizadas{
 			chomp; # quito el caracter de corte de linea al final de linea
 			
 			($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
-DEBUG $encuestador;
 			if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
 				agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
-DEBUG $encuestador;
 			}
 		}
 	}else{
@@ -497,23 +521,61 @@ DEBUG $encuestador;
 	return 0;
 }
 
-# necesita $encuestasSeleccionadas
+sub generarIdArchivoResultado{
+	
+	# TODO: mejorar la forma en la cual garantizo que el id sea siempre único
+	# este sleep es para garantizar que siempre retorne un id diferente
+	sleep 1;
+	
+	( $seg, $min, $hs, $dia, $mes, $anio ) = ( localtime ) [ 0, 1, 2, 3, 4, 5 ];
+	return sprintf("%4d%02d%02d-%02d%02d%02d", $anio+1900, $mes+1, $dia, $hs, $min, $seg);
+}
+
+# necesita $encuestasSeleccionadas{}{}
 sub entregarResultados{
+	$strSeparadorColumnasResultados = "\t\t\t";
+	$stringEncabezadoResultado = "CRITERIO" . $strSeparadorColumnasResultados . "VERDE" . $strSeparadorColumnasResultados . "AMARILLO" . $strSeparadorColumnasResultados . "ROJO" . "\n";
 	
-	{# iterar el hash $encuestasSeleccionadas
-
-		$stringAMostrar = "fila resultados";
-		
-		if($mostrarResultadosEnPantalla == 1){
-			MOSTRAR_EN_PANTALLA($stringAMostrar);
-		}
-		
-		if($guardarResultadosEnArchivo == 1){
-			GUARDAR_EN_ARCHIVO($stringAMostrar);
-		}
-
+	if($mostrarResultadosEnPantalla == 1){
+		MOSTRAR_EN_PANTALLA($stringEncabezadoResultado);
 	}
-	
+
+	$idArchivo = "";
+	if($guardarResultadosEnArchivo == 1){
+		$idArchivo = generarIdArchivoResultado();
+		GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
+	}
+
+	foreach my $key (sort keys %encuestasSeleccionadas){
+		
+		# Esto es para inicializar en cero
+		if($encuestasSeleccionadas{$key}{"verde"}){
+			;
+		}else{
+			$encuestasSeleccionadas{$key}{"verde"} = 0;
+		}
+		if($encuestasSeleccionadas{$key}{"amarillo"}){
+			;
+		}else{
+			$encuestasSeleccionadas{$key}{"amarillo"} = 0;
+		}
+		if($encuestasSeleccionadas{$key}{"rojo"}){
+			;
+		}else{
+			$encuestasSeleccionadas{$key}{"rojo"} = 0;
+		}
+
+		$stringResultado = $key . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"verde"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"amarillo"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"rojo"} . "\n";
+
+		if($mostrarResultadosEnPantalla == 1){
+			MOSTRAR_EN_PANTALLA($stringResultado);
+		}
+
+		if($guardarResultadosEnArchivo == 1){
+			GUARDAR_EN_ARCHIVO($idArchivo, $stringResultado);
+		}
+	}
+
 	return 0;
 }
 
