@@ -66,24 +66,6 @@
 #
 
 
-#
-# Formato del sumario de Encuestas, archivo $grupo/ya/encuestas.sum
-#    Campos                        | Fuente
-# ----------------------------------------------------------------------------------------
-# 1. Encuestador                   | Userid del nombre del archivo de encuestas realizadas
-# 2. Fecha de realización          | Fecha del nombre del archivo de encuestas realizadas
-# 3. Nro. de Encuesta Realizada    | del archivo de encuestas realizadas
-# 4. Código de encuesta            | del archivo de encuestas realizadas
-# 5. Puntaje Obtenido              | Numérico, campo calculado por sumarC
-# 6. Código de cliente o prospecto | del archivo de encuestas realizadas
-# 7. Sitio de Relevamiento         | del archivo de encuestas realizadas
-# 8. Modalidad de encuesta         | del archivo de encuestas realizadas
-# 9. Persona Relevada              | del archivo de encuestas realizadas
-#
-# Separador de campos: , coma
-#
-# Ejemplo: ESTEPANO,20110909,1022,E03,12,30354444882,E,P,II
-#
 
 
 
@@ -116,20 +98,30 @@ my @array_agencias;
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
 #
-                                    # parámetro que lo controla
-my $encuestador = "";               # -enc, --encuestador
-my $codigoEncuesta = "";             # -cod, --código-de-encuesta
-my $nroEncuesta = 0;                # -n, --nro-de-encuesta
-my $modalidad = 0;                  # -m, --modalidad
-my $mostrarResultadosEnPantalla = 0;# -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-my $guardarResultadosEnArchivo = 0; # -e (resuelve y emite un informe)
+                                        # parámetro que lo controla
+my $filtroSeleccionEncuestadores = "";  # -enc, --encuestador
+my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
+my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
+my $filtroSeleccionModalidad = "";      # -m, --modalidad
+my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
+my $guardarResultadosEnArchivo = 0;     # -e (resuelve y emite un informe)
 
-# Variables en las que almacenaré datos obtenidos de los archivos maestros
-# Son utilizadas para luego poder realizar los "querys"
+
+# Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
 my %infoEncuestasMaestro = ();
-#my @infoMaestros["encuestas"];
-#my @infoMaestros["encuestadores"];
-#my @infoMaestros["modalidades"];
+
+
+# Hash en el que almacenaré las encuestas seleccionadas
+my %encuestasSeleccionadas = ();
+
+
+#
+# Variables de entorno
+my $pathArchivosMaestros = "./"; # = $grupo/mae
+my $pathArchivosYa = "./";       # = $grupo/ya
+my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
+my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
+
 
 
 #
@@ -139,10 +131,15 @@ sub DEBUG{
 	print $_[0];
 }
 
+sub MOSTRAR_EN_PANTALLA{
+	DEBUG $_[0];
+}
+
 sub mostrarAyuda{
 	print "...mostrando la ayuda...";
 }
 
+# recibe @ARGV
 sub procesarArgumentos{
 	use Switch;
 
@@ -200,7 +197,7 @@ sub procesarArgumentos{
 			}
 	
 			case("recibiendo-valor-encuestador"){
-				$encuestador = $param;
+				$filtroSeleccionEncuestadores = $param;
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
@@ -235,41 +232,157 @@ sub procesarArgumentos{
 	return 0;
 }
 
+# necesita de $filtroSeleccionEncuestadores
+#recibe $encuestador
+sub esEncuestadorSeleccionado{
+	if($filtroSeleccionEncuestadores eq "*"){
+		return 1;
+	}
+	
+	$encuestador = $_[0];
+	
+	if($encuestador =~ m/$filtroSeleccionEncuestadores/){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+# necesita de $filtroSeleccionNroEncuesta
+# recibe $nroEncuesta
+sub esNroEncuestaSeleccionada{
+	if($filtroSeleccionNroEncuesta eq "*"){
+		return 1;
+	}
+	
+	$nroEncuesta = $_[0];
+	
+	if($nroEncuesta =~ m/$filtroSeleccionNroEncuesta/){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+# necesita de $filtroSeleccionCodigoEncuesta
+# recibe $nroEncuesta
+sub esCodigoEncuestaSeleccionado{
+	if($filtroSeleccionCodigoEncuesta eq "*"){
+		return 1;
+	}
+	
+	$codigoEncuesta = $_[0];
+	
+	if($codigoEncuesta =~ m/$filtroSeleccionCodigoEncuesta/){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+# necesita de $filtroSeleccionModalidad
+# recibe $modalidad
+sub esModalidadSeleccionada{
+	if($filtroSeleccionModalidad eq "*"){
+		return 1;
+	}
+	
+	$modalidad = $_[0];
+	
+	if($modalidad =~ m/$filtroSeleccionModalidad/){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+# recibe $encuestador, $nroEncuesta, $codigoEncuesta, $modalidad
+sub esEncuestaSeleccionada{
+	$encuestador=$_[0];
+	$nroEncuesta=$_[1];
+	$codigoEncuesta=$_[2];
+	$modalidad=$_[3];
+	
+	if(esEncuestadorSeleccionado($encuestador) || esNroEncuestaSeleccionada($nroEncuesta) || esCodigoEncuestaSeleccionado($codigoEncuesta) || esModalidadSeleccionada($modalidad)){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+# recibe $codigoEncuesta, $puntajeObtenido
+sub obtenerColorPuntaje{
+	$puntajeObtenido = $_[0];
+	
+	
+	# según $codigoEncuesta buscar en la info maestro de las encuestas
+	# buscar el puntaje a qué color corresponde
+	
+	
+	return "rojo";
+}
+
+#recibe $encuestador, $codigoEncuesta, $puntajeObtenido
+sub agregarEncuesta{
+	$encuestador = $_[0];
+	$codigoEncuesta = $_[1];
+	$puntajeObtenido = $_[2];
+	
+	$grupo = $codigoEncuesta;
+	
+#	if($agruparEncuestasPorEncuestador == 1){
+#		$grupo = $grupo . "." . $encuestador;
+#	}
+
+#	if(!%$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)}){
+#DEBUG "alooo";
+#		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} = 1;
+#	}else{
+#DEBUG "diooo";
+
+
+
+# FLATA INICIALIZAR $encuestasSeleccionadas
+
+
+
+		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+#	}
+}
+
 sub obtenerInfoEncuestasMaestras{
+
+	#
+	# Formato del archivo maestro: $grupo/mae/encuestas.mae
+	#
+	#    Campo                  | Descripción
+	# ----------------------------------------
+	# 1. Código de encuesta     | 3 caracteres
+	# 2. Nombre de la encuesta  | N caracteres
+	# 3. Cantidad de preguntas  | numérico 
+	# 4. Verde-Rango Inicial    | numérico 
+	# 5. Verde-Rango Final      | numérico 
+	# 6. Amarillo-Rango Inicial | numérico 
+	# 7. Amarillo-Rango Final   | numérico 
+	# 8. Rojo-Rango Inicial     | numérico 
+	# 9. Rojo-Rango Final       | numérico 
+	#
+	# Separador de campos: , coma.
+	#
+	# Ejemplos:
+	#  E01, Estándar para nuevos clientes,9,20,999,10,19,-999,9
+	#  E02, Satisfacción de clientes,7,55,999,35,54,-999,34
+	#  E03, Cambio de categoria,3,12,999,8,11,-999,7
+	#  E04, Búsqueda de prospectos,12,120,999,88,119,-999,87
+	#  E05, Calificación de oportunidades,5,50,999,30,49,-999,29
+	#
 	
-	$pathArchivosMaestros = "./";
-	$archivoEncuestadoresMaestro = "encuestas.mae";
-	
-	$pathYNombreArchivo = $pathArchivosMaestros . $archivoEncuestadoresMaestro;
+	$pathYNombreArchivo = $_[0];
 	
 	if(open (FILE_HANDLER, $pathYNombreArchivo)){
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
 
-#
-# Formato del archivo maestro: $grupo/mae/encuestas.mae
-#
-#    Campo                  | Descripción
-# ----------------------------------------
-# 1. Código de encuesta     | 3 caracteres
-# 2. Nombre de la encuesta  | N caracteres
-# 3. Cantidad de preguntas  | numérico 
-# 4. Verde-Rango Inicial    | numérico 
-# 5. Verde-Rango Final      | numérico 
-# 6. Amarillo-Rango Inicial | numérico 
-# 7. Amarillo-Rango Final   | numérico 
-# 8. Rojo-Rango Inicial     | numérico 
-# 9. Rojo-Rango Final       | numérico 
-#
-# Separador de campos: , coma.
-#
-# Ejemplos:
-#  E01, Estándar para nuevos clientes,9,20,999,10,19,-999,9
-#  E02, Satisfacción de clientes,7,55,999,35,54,-999,34
-#  E03, Cambio de categoria,3,12,999,8,11,-999,7
-#  E04, Búsqueda de prospectos,12,120,999,88,119,-999,87
-#  E05, Calificación de oportunidades,5,50,999,30,49,-999,29
-#
 			($codigoEncuesta, $null, $null, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
 			
 			$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}    = $verde_inicial;
@@ -281,9 +394,9 @@ sub obtenerInfoEncuestasMaestras{
 			
 			DEBUG(
 				$codigoEncuesta.
-				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}.   " , ".$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}.
-				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-inicial"}." , ".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-final"}.
-				" ; ".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-inicial"}.    " , ".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-final"}.
+				" verde[".$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}.     ",".$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}."]".
+				" amarillo[".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-inicial"}.",".$infoEncuestasMaestro{$codigoEncuesta}{"amarillo-final"}."]".
+				" rojo[".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-inicial"}.       ",".$infoEncuestasMaestro{$codigoEncuesta}{"rojo-final"}."]".
 				"\n");
 		}
 		close(FILE_HANDLER);
@@ -296,38 +409,96 @@ sub obtenerInfoEncuestasMaestras{
 }
 
 sub obtenerEncuestadores{
-#
-# Encuestadores: $grupo/mae/encuestadores.mae
-#    Campo                  | Descripción
-# ----------------------------------------
-# 1. Userid del encuestador | 8 caracteres
-# 2. Nombre del encuestador | N caracteres
-# 3. CUIL                   | 11 numérico 
-# 4. Valido desde           | fecha
-# 5. Valido hasta           | fecha 
-#
-# Separador de campos: , coma
-#
-# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
-#
+	#
+	# Encuestadores: $grupo/mae/encuestadores.mae
+	#    Campo                  | Descripción
+	# ----------------------------------------
+	# 1. Userid del encuestador | 8 caracteres
+	# 2. Nombre del encuestador | N caracteres
+	# 3. CUIL                   | 11 numérico 
+	# 4. Valido desde           | fecha
+	# 5. Valido hasta           | fecha 
+	#
+	# Separador de campos: , coma
+	#
+	# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
+	#
 
 }
 
-sub obtenerNrosEncuestas{
+sub obtenerInfoEncuestasSumarizadas{
+	#
+	# Formato del sumario de Encuestas, archivo $grupo/ya/encuestas.sum
+	#    Campos                        | Fuente
+	# ----------------------------------------------------------------------------------------
+	# 1. Encuestador                   | Userid del nombre del archivo de encuestas realizadas
+	# 2. Fecha de realización          | Fecha del nombre del archivo de encuestas realizadas
+	# 3. Nro. de Encuesta Realizada    | del archivo de encuestas realizadas
+	# 4. Código de encuesta            | del archivo de encuestas realizadas
+	# 5. Puntaje Obtenido              | Numérico, campo calculado por sumarC
+	# 6. Código de cliente o prospecto | del archivo de encuestas realizadas
+	# 7. Sitio de Relevamiento         | del archivo de encuestas realizadas
+	# 8. Modalidad de encuesta         | del archivo de encuestas realizadas
+	# 9. Persona Relevada              | del archivo de encuestas realizadas
+	#
+	# Separador de campos: , coma
+	#
+	# Ejemplo: ESTEPANO,20110909,1022,E03,12,30354444882,E,P,II
+	#
+
+	$pathYNombreArchivo = $_[0];
 	
+	if(open (FILE_HANDLER, $pathYNombreArchivo)){
+		while (<FILE_HANDLER>) {
+			chomp; # quito el caracter de corte de linea al final de linea
+			
+			($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
+DEBUG $encuestador;
+			if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
+				agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+DEBUG $encuestador;
+			}
+		}
+	}else{
+		DEBUG "No existe el achivo ".$pathYNombreArchivo."\n";
+		return 1;
+	}
+
+	return 0;
 }
 
-sub obtenerModalidades{
+# necesita $encuestasSeleccionadas
+sub entregarResultados{
 	
-}
+	{# iterar el hash $encuestasSeleccionadas
 
+		$stringAMostrar = "fila resultados";
+		
+		if($mostrarResultadosEnPantalla == 1){
+			MOSTRAR_EN_PANTALLA($stringAMostrar);
+		}
+		
+		if($guardarResultadosEnArchivo == 1){
+			GUARDAR_EN_ARCHIVO($stringAMostrar);
+		}
+
+	}
+	
+	return 0;
+}
 
 if(procesarArgumentos(@ARGV) != 0){
 	exit;
-}else{
-	obtenerInfoEncuestasMaestras();
 }
-
+if(obtenerInfoEncuestasMaestras($pathYNombreArchivoEncuestasMaestro)){
+	exit;
+}
+if(obtenerInfoEncuestasSumarizadas($pathYNombreArchivoEncuestasSumarizadas)){
+	exit;
+}
+if(entregarResultados()){
+	exit;
+}
 
 
 
