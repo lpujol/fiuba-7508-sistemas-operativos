@@ -65,7 +65,7 @@ function writeLog
 	logtime=`date "+%y-%m-%d_%H-%M-%S"`
 
 	#Existe Archivo de log?
-	logfile=$LOGDIR/$logprog.$LOGEXT 
+	logfile=$LOGDIR/$logprog$LOGEXT 
 	if [ \! -w $logfile ]; then
 		#Existe el directorio?
 		if [ \! -d $LOGDIR ]; then
@@ -130,7 +130,7 @@ function viewLog
 	existeParametro "$logprog" "Falta el nombre de la programa"
 
 	#Existe Archivo de log?
-	logfile="$LOGDIR/$logprog.$LOGEXT" 
+	logfile="$LOGDIR/$logprog$LOGEXT" 
 
 	if [ \! -f $logfile ]; then
 		echo No encuentro el archivo $logfile
@@ -173,7 +173,7 @@ fi
 
 if [ -z $LOGEXT ]
   then
-  LOGEXT=log
+  LOGEXT=".log"
 fi
 
 #Borar variables
