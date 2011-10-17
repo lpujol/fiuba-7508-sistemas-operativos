@@ -1,0 +1,18 @@
+#achivo de maestro de errores para grabar el log
+#Structura
+#Numero(###),Texto
+
+#Errores generales
+104,Falta algo
+
+#Errores de Archivos
+200,Archivo inexistente
+201,Ruta inexistente
+202,Directorio inexistente
+210,No se pudo mover el archivo
+220,No puede escribir en el archivo 
+
+#Errores de loguear, implementacion en la función, no puede cambiar acá
+997,LoguearC:Sustitution de characteres en el mensaje
+998,LoguearC:Log no existe, crear nuevo archivo de log
+999,LoguearC:Maestro de errores no existe
