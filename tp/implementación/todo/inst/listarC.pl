@@ -9,12 +9,12 @@
 #
 # Interacción de este programa con el resto del sistema:
 #  Necesita de los archivos:
-#   $grupo/ya/encuestas.sum
-#   $grupo/mae/encuestas.mae
-#   $grupo/mae/preguntas.mae
-#   $grupo/mae/encuestadores.mae
+#   ../ya/encuestas.sum
+#   ../mae/encuestas.mae
+#   ../mae/preguntas.mae
+#   ../mae/encuestadores.mae
 #
-#  Los informes se graban en el directorio: $grupo/ya
+#  Los informes se graban en el directorio: ../ya
 #
 #  No escribe logs
 #
@@ -68,35 +68,6 @@
 #
 
 
-
-
-
-
-
-#http://www.rocketaware.com/perl/perlfaq4/How_can_I_tell_whether_an_array_.htm
-#http://www.tizag.com/perlT/perlarrays.php
-
-my %hash_provincia_y_codigo_de_beneficio = ();
-my %hash_provincia = ();
-my %hash_codigo_de_beneficio = ();
-
-my $total_postulantes = 0;
-my $imprimir_matriz_de_control = 0; #false por default
-my $salida_por_pantalla = 0; 
-my $salida_por_archivo = 0; 
-my $procesar_aceptados = 0; 
-my $procesar_rechazados = 0; 
-my $procesar_pendientes = 0; 
-my $path_recibidos = "";
-my $secuencia = 0;
-
-my @array_archivos_beneficiarios;
-my @array_archivos_benerro;
-my @array_codigos_de_beneficio;
-my @array_agencias;
-
-
-
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
 #
@@ -109,7 +80,7 @@ my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra res
 my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
 
 
-my $agruparEncuestasPorEncuestador = 1; # esto deberpoder setearse a trav고de alg򮠮uevo par⮥tro del programa
+my $agruparEncuestasPorEncuestador = 1; # esto debería poder setearse a través de algún nuevo parámetro del programa
 
 
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
@@ -122,9 +93,9 @@ my %encuestasSeleccionadas = ();
 
 #
 # Variables de entorno
-my $pathArchivosMaestros = "./";   # = $grupo/mae
-my $pathArchivosYa = "./";         # = $grupo/ya
-my $pathArchivosResultados = "./"; # = $grupo/ya
+my $pathArchivosMaestros = "../mae/";  # = $grupo/mae
+my $pathArchivosYa = "../ya/";         # = $grupo/ya
+my $pathArchivosResultados = "../ya/"; # = $grupo/ya
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
@@ -135,6 +106,10 @@ my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
 #
 sub DEBUG{
 	# print @_;
+}
+
+sub MOSTRAR_ERROR{
+	print @_;
 }
 
 sub MOSTRAR_EN_PANTALLA{
@@ -152,7 +127,32 @@ sub GUARDAR_EN_ARCHIVO{
 }
 
 sub mostrarAyuda{
-	print "...mostrando la ayuda...";
+	print "\nAYUDA\n";
+	print "Los parámetros pueden ser:\n";
+	print " -enc, --encuestador\n";
+	print " -cod, --código-de-encuesta\n";
+	print " -n, --nro-de-encuesta\n";
+	print " -m, --modalidad\n";
+	print " -h, --help\n";
+	
+	print "\n";
+	
+	print "Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)\n";
+	print "Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)\n";
+	print "Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles\n";
+	
+	print "\n";
+	
+	print "En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)\n";
+	
+	print "\n";
+	
+	print "Las opciones pueden ser:\n";
+	print " -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)\n";
+	print " -e (resuelve y emite un informe)\n";
+	print "O la combinación de ellas.\n";
+	
+	print "\n";
 }
 
 # recibe @ARGV
@@ -233,15 +233,10 @@ sub procesarArgumentos{
 			}
 	
 			else{
-				DEBUG "\ERROR: estado desconocido, \$estado_procesador_de_argumentos=$estado_procesador_de_argumentos\n";
+				MOSTRAR_ERROR "\ERROR: estado desconocido, \$estado_procesador_de_argumentos=$estado_procesador_de_argumentos\n";
 				return 1;
 			}
 		}
-			
-	#	if($param =~ m/^benef\.[0-9]+$/){
-	#		push(@array_archivos_beneficiarios, $param);
-	#	}
-	
 	}
 	DEBUG "\n";
 	
@@ -349,7 +344,7 @@ sub obtenerColorPuntaje{
 	
 	while ( $key = each %infoEncuestasMaestro ){
 		if($key eq $codigoEncuesta){
-			#DEBUG "key: $key, value: $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
+			DEBUG "key: $key -> $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
 
 			switch($puntajeObtenido){
 				case[$infoEncuestasMaestro{$key}{"verde-inicial"} .. $infoEncuestasMaestro{$key}{"verde-final"}]{
@@ -368,7 +363,7 @@ sub obtenerColorPuntaje{
 				}
 				
 				else{
-					DEBUG "Para la encuesta $codigoEncuesta, el puntaje $puntajeObtenido NO corresponde a ningún color!\n";
+					MOSTRAR_ERROR "Para la encuesta $codigoEncuesta, el puntaje $puntajeObtenido NO corresponde a ningún color!\n";
 					exit 1;
 				}
 			}
@@ -392,18 +387,8 @@ sub agregarEncuesta{
 	}
 	DEBUG "grupo encuesta-encuestador?: $grupo";
 
-#	if(!%$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)}){
-#DEBUG "alooo";
-#		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} = 0;
-#	}
-
-
-# FLATA INICIALIZAR $encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} en cero!
-#DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
-		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
-DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
-
-
+	$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+	DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
 }
 
 sub obtenerInfoEncuestasMaestras{
@@ -457,7 +442,7 @@ sub obtenerInfoEncuestasMaestras{
 		}
 		close(FILE_HANDLER);
 	}else{
-		DEBUG "No existe el achivo ".$pathYNombreArchivo."\n";
+		MOSTRAR_ERROR "No existe el achivo ".$pathYNombreArchivo."\n";
 		return 1;
 	}
 
@@ -514,7 +499,7 @@ sub obtenerInfoEncuestasSumarizadas{
 			}
 		}
 	}else{
-		DEBUG "No existe el achivo ".$pathYNombreArchivo."\n";
+		MOSTRAR_ERROR "No existe el achivo ".$pathYNombreArchivo."\n";
 		return 1;
 	}
 
@@ -590,266 +575,6 @@ if(obtenerInfoEncuestasSumarizadas($pathYNombreArchivoEncuestasSumarizadas)){
 }
 if(entregarResultados()){
 	exit;
-}
-
-
-
-
-
-if (($salida_por_pantalla == 0)&&($salida_por_archivo == 0)){
-	$salida_por_pantalla = 1; 
-}
-
-if (($procesar_aceptados == 0)&&($procesar_rechazados == 0)&&($procesar_pendientes == 0)){
-	$procesar_aceptados = 1; 
-	$procesar_rechazados = 1; 
-	$procesar_pendientes = 1; 
-}
-
-if ($salida_por_archivo){
-	open (SEC_IN,"<plist.secuencia");
-	while (<SEC_IN>){
-		chomp;
-		$secuencia = $_;
-	}
-	close(SEC_IN);
-
-	$secuencia = $secuencia + 1;
-
-	open (SEC_OUT,">plist.secuencia");
-	DEBUG SEC_OUT "$secuencia\n";
-	close(SEC_OUT);
-
-	open (OUT, ">plist".$secuencia) || DEBUG "No se pudo crear el archivo de salida\n";
-}
-
-#checkeo si el usuario a ingresado archivos
-#sino tomo todos los archivos del directorio
-#que tengan el patron benef.* o el patron benerro.*
-if((!(@array_archivos_beneficiarios))&&(!(@array_archivos_benerro))){
-	if (-d $path_recibidos){
-		opendir(DIR,$path_recibidos);
-		@aux=readdir(DIR);
-		foreach $posible_archivo (@aux){
-			if($posible_archivo =~ m/^benef\.[0-9]+$/){
-				push(@array_archivos_beneficiarios, $posible_archivo);
-			}
-			
-			if($posible_archivo =~ m/^benerro\.[0-9]+$/){
-				push(@array_archivos_benerro, $posible_archivo);
-			}
-		}
-		closedir(DIR);
-	}
-	else{
-		DEBUG "El path de archivos postulados es inexistente\n";
-	}
-}
-
-
-#preparo las consultas sobre agencias
-undef %es_agencia_solicitada;
-for (@array_agencias) { $es_agencia_solicitada{$_} = 1 }
-
-#preparo las consultas sobre beneficios
-undef %es_codigo_de_beneficio_solicitado;
-for (@array_codigos_de_beneficio) { $es_codigo_de_beneficio_solicitado{$_} = 1 }
-
-if (($procesar_aceptados)||($procesar_pendientes)){
-	foreach $archivo (@array_archivos_beneficiarios){
-		open (BENEF, $path_recibidos . $archivo) || DEBUG "No existe el achivo ".$path_recibidos."$archivo\n";
-		while (<BENEF>) {
-				chomp; # quito el caracter de corte de linea al final de linea
-
-				($agencia, $null, $codigo_de_beneficio, $cuil, $null, $null, $apellido, $null, $null, $null, $provincia, $null, $fecha_efectiva_alta, $null, $null, $estado, $null, $null, $null)=split(",");
-
-				#ver si cumple las condiciones para procesar
-				if (((lc($estado) eq "aceptado")&&($procesar_aceptados))||((lc($estado) eq "pendiente")&&($procesar_pendientes))){
-					#si el hash esta vacio, no se dieron restricciones sobre agencias
-					if (($es_agencia_solicitada{$agencia}) || (!%es_agencia_solicitada)){
-						#si el hash esta vacio, no se dieron restricciones sobre codigos de beneficio
-						if (($es_codigo_de_beneficio_solicitado{$codigo_de_beneficio}) || ((!%es_codigo_de_beneficio_solicitado))){
-					
-							$hash_provincia_y_codigo_de_beneficio{$provincia}{$codigo_de_beneficio} +=1;
-							$hash_provincia{$provincia} +=1;
-							$hash_codigo_de_beneficio{$codigo_de_beneficio} +=1;
-							$total_postulantes +=1;
-
-							#salida por pantalla
-							if ($salida_por_pantalla){
-								DEBUG "Beneficio: $codigo_de_beneficio";
-								DEBUG " Agencia: $agencia";
-								DEBUG " Cuil: $cuil";
-								DEBUG " Apellido: $apellido";
-								DEBUG " Provincia: $provincia";
-								DEBUG " Estado: $estado";
-								DEBUG " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
-							}
-								
-							#salida por archivo
-							if ($salida_por_archivo){
-								DEBUG OUT "Beneficio: $codigo_de_beneficio";
-								DEBUG OUT " Agencia: $agencia";
-								DEBUG OUT " Cuil: $cuil";
-								DEBUG OUT " Apellido: $apellido";
-								DEBUG OUT " Provincia: $provincia";
-								DEBUG OUT " Estado: $estado";
-								DEBUG OUT " Fecha efectiva de Alta: $fecha_efectiva_alta\n";
-							}
-						}
-					}
-				}
-			}
-
-		close(BENEF);
-	}
-}
-
-
-if ($procesar_rechazados){
-	foreach $archivo (@array_archivos_benerro){
-		open (BENERRO, $path_recibidos . $archivo) || DEBUG "No existe el achivo ".$path_recibidos."$archivo\n";
-		while (<BENERRO>) {
-				chomp; # quito el caracter de corte de linea al final de linea
-
-				($agencia, $null, $null, $null, $codigo_de_beneficio, $cuil, $null, $null, $apellido, $null, $null, $null, $provincia, $fecha_pedida_alta, $null)=split(",");
-
-				#si el hash esta vacio, no se dieron restricciones sobre agencias
-				if (($es_agencia_solicitada{$agencia}) || (!%es_agencia_solicitada)){
-					#si el hash esta vacio, no se dieron restricciones sobre codigos de beneficio
-					if (($es_codigo_de_beneficio_solicitado{$codigo_de_beneficio}) || ((!%es_codigo_de_beneficio_solicitado))){
-				
-						$hash_provincia_y_codigo_de_beneficio{$provincia}{$codigo_de_beneficio} +=1;
-						$hash_provincia{$provincia} +=1;
-						$hash_codigo_de_beneficio{$codigo_de_beneficio} +=1;
-						$total_postulantes +=1;
-
-						#salida por pantalla
-						if ($salida_por_pantalla){
-							DEBUG "Beneficio: $codigo_de_beneficio";
-							DEBUG " Agencia: $agencia";
-							DEBUG " Cuil: $cuil";
-							DEBUG " Apellido: $apellido";
-							DEBUG " Provincia: $provincia";
-							DEBUG " Estado: rechazado";
-							DEBUG " Fecha pedida de Alta: $fecha_pedida_alta\n";
-						}
-
-						#salida por archivo
-						if ($salida_por_archivo){
-							DEBUG OUT "Beneficio: $codigo_de_beneficio";
-							DEBUG OUT " Agencia: $agencia";
-							DEBUG OUT " Cuil: $cuil";
-							DEBUG OUT " Apellido: $apellido";
-							DEBUG OUT " Provincia: $provincia";
-							DEBUG OUT " Estado: rechazado";
-							DEBUG OUT " Fecha pedida de Alta: $fecha_pedida_alta\n";
-						}
-					}
-				}
-			
-			}
-
-		close(BENERRO);
-	}
-}
-
-if (($imprimir_matriz_de_control)&&($total_postulantes)){
-	#imprimo encabezado de la matriz
-	if ($salida_por_pantalla){
-		printf ("%-20s","Codigos");
-	}
-	if ($salida_por_archivo)
-	{
-		printf OUT "%-20s","Codigos";
-	}
-
-	foreach my $codigo (sort {lc($a) cmp lc($b)} keys %hash_codigo_de_beneficio){
-		if ($salida_por_pantalla){
-			printf ("%-10s",$codigo);
-		}
-		if ($salida_por_archivo)
-		{
-			printf OUT "%-10s",$codigo;
-		}
-	}
-	if ($salida_por_pantalla){
-		DEBUG "\n";
-	}
-	if ($salida_por_archivo)
-	{
-		DEBUG OUT "\n";
-	}
-	
-
-	foreach my $provincia (sort {lc($a) cmp lc($b)} keys %hash_provincia_y_codigo_de_beneficio){
-		if ($salida_por_pantalla){
-			printf ("%-20s",$provincia);
-		}
-		if ($salida_por_archivo)
-		{
-			printf OUT "%-20s",$provincia;
-		}
-		foreach my $codigo (sort {lc($a) cmp lc($b)} keys %hash_codigo_de_beneficio){
-			if (exists $hash_provincia_y_codigo_de_beneficio{$provincia}{$codigo}){
-				if ($salida_por_pantalla){
-					printf ("%-10d",$hash_provincia_y_codigo_de_beneficio{$provincia}{$codigo});
-				}
-				if ($salida_por_archivo)
-				{
-					printf OUT "%-10d",$hash_provincia_y_codigo_de_beneficio{$provincia}{$codigo};
-				}
-			}
-			else
-			{
-				if ($salida_por_pantalla){
-					printf ("%-10d","0");
-				}
-				if ($salida_por_archivo)
-				{
-					printf OUT "%-10d","0";
-				}
-			}
-		}
-		if ($salida_por_pantalla){
-			printf ("%-10d",$hash_provincia{$provincia});
-			DEBUG "\n";
-		}
-		if ($salida_por_archivo)
-		{
-			printf OUT "%-10d",$hash_provincia{$provincia};
-			DEBUG OUT "\n";
-		}
-	}
-
-	if ($salida_por_pantalla){
-		printf ("%-20s","");
-	}
-	if ($salida_por_archivo)
-	{
-		printf OUT "%-20s","";
-	}
-	
-	foreach my $codigo (sort {lc($a) cmp lc($b)} keys %hash_codigo_de_beneficio){
-		if ($salida_por_pantalla){
-			printf ("%-10d",$hash_codigo_de_beneficio{$codigo});
-		}
-		if ($salida_por_archivo)
-		{
-			printf OUT "%-10d",$hash_codigo_de_beneficio{$codigo};
-		}
-	}
-	if ($salida_por_pantalla){
-		printf ("%-10d",$total_postulantes);
-		DEBUG "\n";
-	}
-	if ($salida_por_archivo)
-	{
-		printf OUT "%-10d",$total_postulantes;
-		DEBUG OUT "\n";
-
-		close(OUT);
-	}
 }
 
 exit;
