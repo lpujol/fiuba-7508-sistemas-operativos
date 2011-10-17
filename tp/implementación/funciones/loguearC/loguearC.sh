@@ -130,7 +130,7 @@ function viewLog
 	existeParametro "$logprog" "Falta el nombre de la programa"
 
 	#Existe Archivo de log?
-	logfile="$LOGDIR/$logprog$LOGEXT" 
+	logfile="$GRUPO/$LOGDIR/$logprog$LOGEXT" 
 
 	if [ \! -f $logfile ]; then
 		echo No encuentro el archivo $logfile
