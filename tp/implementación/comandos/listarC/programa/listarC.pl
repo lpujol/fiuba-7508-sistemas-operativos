@@ -93,9 +93,9 @@ my %encuestasSeleccionadas = ();
 
 #
 # Variables de entorno
-my $pathArchivosMaestros = "../";   # = $grupo/mae
-my $pathArchivosYa = "../";         # = $grupo/ya
-my $pathArchivosResultados = "../"; # = $grupo/ya
+my $pathArchivosMaestros = "../mae/";  # = $grupo/mae
+my $pathArchivosYa = "../ya/";         # = $grupo/ya
+my $pathArchivosResultados = "../ya/"; # = $grupo/ya
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
