@@ -39,38 +39,9 @@
 # O la combinación de ellas.
 #
 
-#
-# Formatos de los archivos maestros
-#
-# Preguntas: $grupo/mae/preguntas.mae
-#   Campo            | Descripción o valor
-# ---------------------------------------------------------------
-# 1. Id de Pregunta   | Numérico
-# 2. Pregunta         | N caracteres
-# 3. Tipo de Pregunta | Valores posibles: + (positiva), - (negativa)
-# 4. Ponderación      | Valores posibles: ALTA, MEDIA, BAJA
-#
-# Separador de campos: , coma.
-#
-# Ejemplos:
-#  110, Posee Numero de CUIT,+,ALTA
-#  111, Quiere contratar servicios premium,+,ALTA
-#  120, Tiene domicilio en capital,+,MEDIA
-#  121, Quiere contratar servicios estandard,+,MEDIA
-#  130, Es un referido,+,BAJA
-#  131, Usa habitualmente el debito automatico,+,BAJA
-#  210, Tiene deuda atrasada en mas de 3 meses,-,ALTA
-#  211, Tiene acción judicial pendiente,-,ALTA
-#  220, Cambia regularmente de proveedor,-,MEDIA
-#  221, No posee referencias,-,MEDIA
-#  230, Está buscando dar de baja servicios,-,BAJA
-#  231, Esta en el límite del area de cobertura,-,BAJA
-#
-
 
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
-#
                                         # parámetro que lo controla
 my $filtroSeleccionEncuestadores = "";  # -enc, --encuestador
 my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
@@ -86,13 +57,12 @@ my $agruparEncuestasPorEncuestador = 1; # esto debería poder setearse a través
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
 my %infoEncuestasMaestro = ();
 
-
-# Hash en el que almacenaré las encuestas seleccionadas
+# Hash en el que almacenaré las encuestas seleccionadas por los criterios del "query"
 my %encuestasSeleccionadas = ();
 
 
 #
-# Variables de entorno
+# Variables de "entorno"
 my $pathArchivosMaestros = "../mae/";  # = $grupo/mae
 my $pathArchivosYa = "../ya/";         # = $grupo/ya
 my $pathArchivosResultados = "../ya/"; # = $grupo/ya
@@ -116,6 +86,7 @@ sub MOSTRAR_EN_PANTALLA{
 	print @_;
 }
 
+# necesita de $pathYNombreArchivoResultados
 # recibe $idArchivo, $strAGuardar
 sub GUARDAR_EN_ARCHIVO{
 	$idArchivo = $_[0];
@@ -127,7 +98,7 @@ sub GUARDAR_EN_ARCHIVO{
 }
 
 sub mostrarAyuda{
-	print "\nAYUDA\n";
+	print "\n====== AYUDA ======\n";
 	print "Los parámetros pueden ser:\n";
 	print " -enc, --encuestador\n";
 	print " -cod, --código-de-encuesta\n";
@@ -218,17 +189,17 @@ sub procesarArgumentos{
 			}
 	
 			case("recibiendo-valor-codigo-encuesta"){
-				$codigoEncuesta = $param;
+				$filtroSeleccionCodigoEncuesta = $param;
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-nro-encuesta"){
-				$nroEncuesta = $param;
+				$filtroSeleccionNroEncuesta = $param;
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-modalidad"){
-				$modalidad = $param;
+				$filtroSeleccionModalidad = $param;
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
@@ -244,13 +215,17 @@ sub procesarArgumentos{
 }
 
 # necesita de $filtroSeleccionEncuestadores
-#recibe $encuestador
+# recibe $encuestador
 sub esEncuestadorSeleccionado{
 	if($filtroSeleccionEncuestadores eq "*"){
 		return 1;
 	}
 	
 	$encuestador = $_[0];
+	
+	if(lc($encuestador) eq lc($filtroSeleccionEncuestadores)){
+		return 1;
+	}
 	
 	if($encuestador =~ m/$filtroSeleccionEncuestadores/){
 		return 1;
@@ -276,7 +251,7 @@ sub esNroEncuestaSeleccionada{
 }
 
 # necesita de $filtroSeleccionCodigoEncuesta
-# recibe $nroEncuesta
+# recibe $codigoEncuesta
 sub esCodigoEncuestaSeleccionado{
 	if($filtroSeleccionCodigoEncuesta eq "*"){
 		return 1;
