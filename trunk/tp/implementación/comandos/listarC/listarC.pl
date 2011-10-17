@@ -107,6 +107,9 @@ my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra res
 my $guardarResultadosEnArchivo = 0;     # -e (resuelve y emite un informe)
 
 
+my $agruparEncuestasPorEncuestador = 1; # esto deberpoder setearse a trav고de alg򮠮uevo par⮥tro del programa
+
+
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
 my %infoEncuestasMaestro = ();
 
@@ -128,11 +131,11 @@ my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 # Funciones
 #
 sub DEBUG{
-	print $_[0];
+	print @_;
 }
 
 sub MOSTRAR_EN_PANTALLA{
-	DEBUG $_[0];
+	DEBUG @_;
 }
 
 sub mostrarAyuda{
@@ -310,16 +313,44 @@ sub esEncuestaSeleccionada{
 	}
 }
 
+# necesita $encuestasSeleccionadas{}
 # recibe $codigoEncuesta, $puntajeObtenido
 sub obtenerColorPuntaje{
-	$puntajeObtenido = $_[0];
+	use Switch;
+
+	$codigoEncuesta = $_[0];
+	$puntajeObtenido = $_[1];
+	$color = "ERROR-color-desconocido";
 	
+	foreach my $key ( keys %infoEncuestasMaestro ){
+		if($key eq $codigoEncuesta){
+			#DEBUG "key: $key, value: $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
+
+			switch($puntajeObtenido){
+				case[$infoEncuestasMaestro{$key}{"verde-inicial"} .. $infoEncuestasMaestro{$key}{"verde-final"}]{
+					DEBUG "Para la encuesta $codigoEncuesta, el puntaje obtenido ($puntajeObtenido) corresponde al color verde!\n";
+					$color = "verde";
+				}
+
+				case[$infoEncuestasMaestro{$key}{"amarillo-inicial"} .. $infoEncuestasMaestro{$key}{"amarillo-final"}]{
+					DEBUG "Para la encuesta $codigoEncuesta, el puntaje obtenido ($puntajeObtenido) corresponde al color amarillo!\n";
+					$color = "amarillo";
+				}
+
+				case[$infoEncuestasMaestro{$key}{"rojo-inicial"} .. $infoEncuestasMaestro{$key}{"rojo-final"}]{
+					DEBUG "Para la encuesta $codigoEncuesta, el puntaje obtenido ($puntajeObtenido) corresponde al color rojo!\n";
+					$color = "rojo";
+				}
+				
+				else{
+					DEBUG "Para la encuesta $codigoEncuesta, el puntaje $puntajeObtenido NO corresponde a ningún color!\n";
+					exit 1;
+				}
+			}
+		}
+	}	
 	
-	# según $codigoEncuesta buscar en la info maestro de las encuestas
-	# buscar el puntaje a qué color corresponde
-	
-	
-	return "rojo";
+	return $color;
 }
 
 #recibe $encuestador, $codigoEncuesta, $puntajeObtenido
@@ -330,24 +361,23 @@ sub agregarEncuesta{
 	
 	$grupo = $codigoEncuesta;
 	
-#	if($agruparEncuestasPorEncuestador == 1){
-#		$grupo = $grupo . "." . $encuestador;
-#	}
+	if($agruparEncuestasPorEncuestador == 1){
+		$grupo .= ("." . $encuestador);
+	}
+	DEBUG "grupo encuesta-encuestador?: $grupo";
 
 #	if(!%$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)}){
 #DEBUG "alooo";
-#		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} = 1;
-#	}else{
-#DEBUG "diooo";
-
-
-
-# FLATA INICIALIZAR $encuestasSeleccionadas
-
-
-
-		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+#		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} = 0;
 #	}
+
+
+# FLATA INICIALIZAR $encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} en cero!
+#DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
+		$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
+
+
 }
 
 sub obtenerInfoEncuestasMaestras{
