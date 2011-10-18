@@ -6,6 +6,25 @@
 # $Id$
 #
 
+
+#
+# TODO: ME FALTA HACER ESTO!!!
+#
+# 12.Otra consulta puede estar dada por un nro de encuesta específico.
+#    En este caso lo que se debe mostrar son todos los detalles del registro,
+#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
+#    nombre de la encuesta, cantidad de preguntas y  a continuación del puntaje
+#    obtenido, indicar el color que le corresponde.
+#
+# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
+# Cliente ccc, Modalidad x, sitio y, persona z
+# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
+# Puntaje obtenido: nnn calificación: <color>
+#
+
+
+
+
 #
 # Interacción de este programa con el resto del sistema:
 #  Necesita de los archivos:
@@ -67,10 +86,10 @@ my %encuestasSeleccionadas = ();
 
 
 #
-# Variables de "entorno"
-my $pathArchivosMaestros = "../mae/";  # = $grupo/mae
-my $pathArchivosYa = "../ya/";         # = $grupo/ya
-my $pathArchivosResultados = "../ya/"; # = $grupo/ya
+# Variables de entorno
+my $pathArchivosMaestros = $ENV{"GRUPO"}.$ENV{"DATAMAE"}."/";
+my $pathArchivosYa = $ENV{"GRUPO"}."/ya/";
+my $pathArchivosResultados = $ENV{"GRUPO"}."/ya/";
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
@@ -424,7 +443,7 @@ sub obtenerGrupoDeOrdenamiento{
 		}
 		
 		else{
-			MOSTRAR_ERROR("El modo de agrupamiento $agrupamiento es inválido.");
+			MOSTRAR_ERROR("El modo de agrupamiento $agrupamiento es inválido.\n");
 			exit 1;
 		}
 	}
