@@ -113,9 +113,6 @@ while [ $COUNTER -eq 1 ]; do
 	        if [ $? -ne 0 ]; then
 		        echo "sumarC corriendo con PID $PID_SUMARC"
 		        $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "sumarC corriendo con PID $PID_SUMARC" -p "detectarC"
-    		else
-		        echo "No se pudo ejecutar el script sumarC"
-		        $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "No se pudo ejecutar el script sumarC" -p "detectarC"
         	fi
         fi
 	fi
