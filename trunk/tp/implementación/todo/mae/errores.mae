@@ -7,7 +7,7 @@
 
 #Errores de Archivos
 200,Archivo inexistente
-201,Ruta inexistente
+#201,Ruta inexistente
 202,Directorio inexistente
 210,No se pudo mover el archivo
 220,No puede escribir en el archivo 
