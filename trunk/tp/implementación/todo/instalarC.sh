@@ -75,19 +75,16 @@ function crearDirectorio() {
 }
 
 function terminosCondiciones() {
-	mensaje="*****************************************************************\n"
-	mensaje+="*           Sistema Consultar Copyright SisOp (c)2011           *\n"
-	mensaje+="*****************************************************************\n"
-	mensaje+="* Al instalar Consultar UD. expresa estar en un todo de acuerdo *\n"
-	mensaje+="* con los términos y condiciones del \"ACUERDO DE LICENCIA DE    *\n"
-	mensaje+="* SOFTWARE\" incluido en este paquete.                           *\n"
-	mensaje+="*****************************************************************\n"
-	mensaje+="Acepta? (s/n): "
-	echo -e -n "$mensaje"
+	echo "*****************************************************************"
+	echoAndLog "I" "*           Sistema Consultar Copyright SisOp (c)2011           *\n"
+	echo "*****************************************************************"
+	echoAndLog "I" "* Al instalar Consultar UD. expresa estar en un todo de acuerdo *\n* con los términos y condiciones del \"ACUERDO DE LICENCIA DE    *\n* SOFTWARE\" incluido en este paquete.                           *\n"
+	echo "*****************************************************************"
+	echoAndLog "I" "Acepta? (s/n): "
 
 	read respuesta
 
-	loguear "I" "$mensaje $respuesta"
+	loguear "I" "$respuesta"
 		
 	if [ "$respuesta" = "" ] || [ `toLower $respuesta` != "s" ]; then
 		echoAndLog "I" "Instalacion Cancelada\n"
@@ -102,9 +99,8 @@ function terminosCondiciones() {
 function verificarPerl() {
 	perlVersion=`perl --version | grep -o "v[5-9]\.[0-9]\{1,\}\.[0-9]\{1,\}"`
 	if [ $? -ne 0 ]; then
-		mensaje="Para instalar Consultar es necesario contar con  Perl 5 o superior instalado.\n"
-		mensaje+="Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado."
-		echoAndLog "SE" "$mensaje"
+		echoAndLog "SE" "Para instalar Consultar es necesario contar con  Perl 5 o superior instalado.\n"
+		echoAndLog "SE" "Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado."
 		exit 1
 	else
 		echoAndLog "I" "Version de Perl instalada: $perlVersion\n"
@@ -181,6 +177,7 @@ function definirDirArribos() {
 
 		#Chequeo espacio disponible en disco
 		freeSize=`df $GRUPO | tail -n 1 | sed 's/\s\+/ /g' | cut -d ' ' -f 4`
+		let freeSize=$freeSize/1024
 		if [ $freeSize -lt $DATASIZE ]; then
 			echoAndLog "E" "Insuficiente espacio en disco. Espacio disponible: $freeSize MB. Espacio requerido $DATASIZE MB\n"
 		fi
@@ -249,28 +246,26 @@ function definirDirLog() {
 }
 
 function mostrarParametros() {
-	mensaje="********************************************************\n"
-	mensaje+="* Parámetros de Instalación del paquete  Consultar     *\n"
-	mensaje+="********************************************************\n"
-	mensaje+="Directorio de trabajo: $GRUPO\n"
-	mensaje+="Directorio de instalación: $INSTDIR\n"
-	mensaje+="Directorio de configuración: $CONFDIR\n"
-	mensaje+="Directorio de datos maestros: $MAEDIR\n"
-	mensaje+="Directorio de ejecutables: $BINDIR\n"
-	mensaje+="Librería de funciones: lib\n"
-	mensaje+="Directorio de arribos: $ARRIDIR\n"
-	mensaje+="Espacio mínimo reservado en $ARRIDIR: $DATASIZE MB\n"
-	mensaje+="Directorio para los archivos de Log: $LOGDIR\n"
-	mensaje+="Extensión para los archivos de Log: $LOGEXT\n"
-	mensaje+="Tamaño máximo para cada archivo de Log: $LOGSIZE Kb\n"
-	mensaje+="Log de la instalación: $INSTDIR\n\n"
-	echoAndLog "I" "$mensaje"
+	echoAndLog "I" "********************************************************"
+	echoAndLog "I" "* Parámetros de Instalación del paquete  Consultar     *"
+	echoAndLog "I" "********************************************************"
+	echoAndLog "I" "Directorio de trabajo: $GRUPO"
+	echoAndLog "I" "Directorio de instalación: $INSTDIR"
+	echoAndLog "I" "Directorio de configuración: $CONFDIR"
+	echoAndLog "I" "Directorio de datos maestros: $MAEDIR"
+	echoAndLog "I" "Directorio de ejecutables: $BINDIR"
+	echoAndLog "I" "Librería de funciones: lib"
+	echoAndLog "I" "Directorio de arribos: $ARRIDIR"
+	echoAndLog "I" "Espacio mínimo reservado en $ARRIDIR: $DATASIZE MB"
+	echoAndLog "I" "Directorio para los archivos de Log: $LOGDIR"
+	echoAndLog "I" "Extensión para los archivos de Log: $LOGEXT"
+	echoAndLog "I" "Tamaño máximo para cada archivo de Log: $LOGSIZE Kb"
+	echoAndLog "I" "Log de la instalación: $INSTDIR\n"
 }
 
 function confirmarParametros() {
-	mensaje="Si los datos ingresados son correctos de ENTER para continuar, si\n"
-	mensaje+="desea modificar algún parámetro oprima cualquier tecla para reiniciar\n"
-	echoAndLog "I" "$mensaje"	
+	echoAndLog "I" "Si los datos ingresados son correctos de ENTER para continuar, si\n"
+	echoAndLog "I" "desea modificar algún parámetro oprima cualquier tecla para reiniciar\n"
 	read -s -n1 respuesta
 
 	if [ "$respuesta" = "" ]; then
@@ -464,27 +459,27 @@ function detectarInstalacion {
 function mostrarComponentesInstalados() {
 	detectarInstalacion
 
-	mensaje="********************************************************\n"
-	mensaje+="*   Sistema Consultar Copyright SisOp (c)2011          *\n"
-	mensaje+="********************************************************\n"
+	echo "********************************************************"
+	echoAndLog "I" "*   Sistema Consultar Copyright SisOp (c)2011          *\n"
+	echo "********************************************************"
 	
 	if [ $cantInst -gt 0 ]; then
-		mensaje+="* Se encuentran instalados los siguientes componentes:\n"
+		echoAndLog "I" "* Se encuentran instalados los siguientes componentes:\n"
 		arr=("${instalados[@]}")
 		for index in ${!arr[*]}
 		do
-			mensaje+="  ${arr[$index]}\n"
+			echoAndLog "I" "  ${arr[$index]}"
 		done
 	fi
 
 	if [ $cantNoInst -gt 0 ]; then 
-		mensaje+="\n* Falta instalar los siguientes componentes:\n"	
+		echoAndLog "I" "\n* Falta instalar los siguientes componentes:\n"	
 		for item in ${noinstalados[*]}
 		do
-			mensaje+="  $item\n"
+			echoAndLog "I" "  $item"
 		done
+		echo ""
 	fi
-	echoAndLog "I" "$mensaje"
 }
 
 #-----------------------------------------------------------------------------------------------#
