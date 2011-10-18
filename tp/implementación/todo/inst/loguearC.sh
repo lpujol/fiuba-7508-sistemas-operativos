@@ -96,7 +96,7 @@ function writeLog
 			grabarLog "$logfaltamae" "$logfile"
 		else
 			logtipomaestro=`sed -n "s|^\($logtipo2\),\(.*\)|\2|p" "$GRUPO/$DATAMAE/errores.mae"`
-			if [ ${#logtipomaestro} -gt 0 ]; then
+			if [ ${#logtipomaestro} -eq 0 ]; then
 				echo No encuentro el codigo en el maestro de errores
 				logfaltamae="$logtime,$logusuario,A996,LoguearC:Codigo de error no existe: $logtipo2"
 				grabarLog "$logfaltamae" "$logfile"
