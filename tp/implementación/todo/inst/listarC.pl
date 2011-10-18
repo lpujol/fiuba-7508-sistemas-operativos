@@ -95,7 +95,7 @@ my %encuestasSeleccionadas = ();
 
 #
 # Variables de entorno
-my $pathArchivosMaestros = $ENV{"GRUPO"}.$ENV{"DATAMAE"}."/";
+my $pathArchivosMaestros = $ENV{"GRUPO"}."/".$ENV{"DATAMAE"}."/";
 my $pathArchivosYa = $ENV{"GRUPO"}."/ya/";
 my $pathArchivosResultados = $ENV{"GRUPO"}."/ya/";
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
