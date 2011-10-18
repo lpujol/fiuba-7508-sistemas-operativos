@@ -6,32 +6,17 @@
 # $Id$
 #
 
-
-#
-# TODO: ME FALTA HACER ESTO!!!
-#
-# 12.Otra consulta puede estar dada por un nro de encuesta específico.
-#    En este caso lo que se debe mostrar son todos los detalles del registro,
-#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
-#    nombre de la encuesta, cantidad de preguntas y  a continuación del puntaje
-#    obtenido, indicar el color que le corresponde.
-#
-# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
-# Cliente ccc, Modalidad x, sitio y, persona z
-# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
-# Puntaje obtenido: nnn calificación: <color>
-#
-
-
-
-
 #
 # Interacción de este programa con el resto del sistema:
+#
+#  Necesita de las siguientes variables de entorno:
+#   * GRUPO, path raiz del sistema
+#   * DATAMAE, path donde están ubicados los archivos maestros, indexando desde $GRUPO
+#
 #  Necesita de los archivos:
-#   $GRUPO/ya/encuestas.sum
-#   $GRUPO/$DATAMAE/encuestas.mae
-#   $GRUPO/$DATAMAE/preguntas.mae
-#   $GRUPO/$DATAMAE/encuestadores.mae
+#   * $GRUPO/ya/encuestas.sum
+#   * $GRUPO/$DATAMAE/encuestas.mae
+#   * $GRUPO/$DATAMAE/encuestadores.mae
 #
 #  Los informes se graban en el directorio: $GRUPO/ya/
 #
@@ -504,7 +489,10 @@ sub obtenerInfoEncuestasMaestras{
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
 
-			($codigoEncuesta, $null, $null, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
+			($codigoEncuesta, $nombreEncuesta, $cantidadPreguntas, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
+			
+			$infoEncuestasMaestro{$codigoEncuesta}{"nombre"}             = $nombreEncuesta;
+			$infoEncuestasMaestro{$codigoEncuesta}{"cantidad-preguntas"} = $cantidadPreguntas;
 			
 			$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}    = $verde_inicial;
 			$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}      = $verde_final; 
@@ -527,6 +515,23 @@ sub obtenerInfoEncuestasMaestras{
 	}
 
 	return 0;
+}
+
+sub estoyBuscandoEncuestaEspecifica{
+	#
+	# 12.Otra consulta puede estar dada por un nro de encuesta específico.
+	#    En este caso lo que se debe mostrar son todos los detalles del registro,
+	#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
+	#    nombre de la encuesta, cantidad de preguntas y a continuación del puntaje
+	#    obtenido, indicar el color que le corresponde.
+	#
+	# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
+	# Cliente ccc, Modalidad x, sitio y, persona z
+	# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
+	# Puntaje obtenido: nnn calificación: <color>
+	#
+	
+	return 1;
 }
 
 sub obtenerInfoEncuestasSumarizadas{
@@ -555,9 +560,25 @@ sub obtenerInfoEncuestasSumarizadas{
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
 			
-			($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
-			if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
-				agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+			if(estoyBuscandoEncuestaEspecifica()){
+				($encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada)=split(",");
+				if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
+#					agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+
+					$nombreEncuestador = "obtenerDe-encuestadores.mae";
+
+					print "Encuesta Nro: " . $nroEncuesta . ", realizada por " . $encuestador . "-\"" . $nombreEncuestador . "\" el dia " . $fechaEncuesta . "\n";
+					print "Cliente " . $codCliente . ", Modalidad " . $modalidad . ", sitio " . $sitioRelevamiento . ", persona " . $personaRelevada . "\n";
+					print "Encuesta Aplicada: " . $codigoEncuesta . "-\"" . $infoEncuestasMaestro{$codigoEncuesta}{"nombre"} . "\" compuesta por " . $infoEncuestasMaestro{$codigoEncuesta}{"cantidad-preguntas"} . " preguntas" . "\n";
+					print "Puntaje obtenido: " . $puntajeObtenido . ", calificación: " . obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido) . "\n";
+
+					return 0;
+				}
+			}else{
+				($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
+				if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
+					agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+				}
 			}
 		}
 	}else{
