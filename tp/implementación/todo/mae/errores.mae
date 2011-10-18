@@ -13,6 +13,7 @@
 220,No puede escribir en el archivo 
 
 #Errores de loguear, implementacion en la función, no puede cambiar acá
+996,LoguearC:Codigo de error no existe
 997,LoguearC:Sustitution de characteres en el mensaje
 998,LoguearC:Log no existe, crear nuevo archivo de log
 999,LoguearC:Maestro de errores no existe
