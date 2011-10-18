@@ -107,14 +107,16 @@ while [ $COUNTER -eq 1 ]; do
 	    if [ $? -ne 0 ]; then
 		    echo "sumarC ya estaba en ejecución con PID $PID_SUMARC"
 		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "Se intentó correr sumarC, pero ya estaba en ejecucion" -p "detectarC"
-    	else
-    	    $GRUPO/$BINDIR/sumarC.sh > /dev/null 2>&1 &
-    	    chequearProcesoSumarC
-	        if [ $? -ne 0 ]; then
-		        echo "sumarC corriendo con PID $PID_SUMARC"
-		        $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "sumarC corriendo con PID $PID_SUMARC" -p "detectarC"
-        	fi
-        fi
+    	    else
+    	       	cd $GRUPO/$BINDIR/ 
+		. sumarC.sh > /dev/null 2>&1 &
+    	        chequearProcesoSumarC
+   		if [ $? -ne 0 ]; then
+			echo "sumarC corriendo con PID $PID_SUMARC"
+			$GRUPO/$LIBDIR/loguearC.sh -w -t I -m "sumarC corriendo con PID $PID_SUMARC" -p "detectarC"
+		fi
+		cd $GRUPO/$ARRIDIR
+	    fi
 	fi
 	sleep 30
 done
