@@ -20,6 +20,10 @@
 #
 
 #
+# PARÁMETROS
+#
+# NINGUNO de los parámetros ni opciones es case-sensitive.
+#
 # Los parámetros pueden ser:
 #  -enc, --encuestador
 #  -cod, --código-de-encuesta
@@ -45,7 +49,7 @@
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
                                         # parámetro que lo controla
-my $filtroSeleccionEncuestadores = "";  # -enc, --encuestador
+my @filtroSeleccionEncuestadores = ();  # -enc, --encuestador
 my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
 my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
 my $filtroSeleccionModalidad = "";      # -m, --modalidad
@@ -99,6 +103,7 @@ sub GUARDAR_EN_ARCHIVO{
 
 sub mostrarAyuda{
 	print "\n====== AYUDA ======\n";
+	print "\nNINGUNO de los parámetros ni opciones es case-sensitive.\n";
 	print "Los parámetros pueden ser:\n";
 	print " -enc, --encuestador\n";
 	print " -cod, --código-de-encuesta\n";
@@ -147,10 +152,9 @@ sub procesarArgumentos{
 	
 	foreach $param (@_) {
 	
-	
 		switch ($estado_procesador_de_argumentos){
 			case("recibiendo-tipo-parametro") {
-				switch($param){
+				switch(lc($param)){
 					case["-enc", "--encuestador"]{
 						DEBUG("\$param = $param\n");
 						$estado_procesador_de_argumentos = "recibiendo-valor-encuestador";
@@ -192,6 +196,12 @@ sub procesarArgumentos{
 						$guardarResultadosEnArchivo = 1;
 					}
 					
+					case["-ce", "-ec"]{
+						DEBUG "\$param = $param\n";
+						$mostrarResultadosEnPantalla = 1;
+						$guardarResultadosEnArchivo = 1;
+					}
+
 					else{
 						DEBUG "ERROR: argumento desconocido!, \$param=$param\n";
 						return 1;
@@ -200,7 +210,7 @@ sub procesarArgumentos{
 			}
 	
 			case("recibiendo-valor-encuestador"){
-				$filtroSeleccionEncuestadores = $param;
+				push(@filtroSeleccionEncuestadores, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
@@ -230,28 +240,43 @@ sub procesarArgumentos{
 		}
 	}
 	DEBUG "\n";
+
+	# Si alguno no fue seteado por los parámetros recibidos, entonces le seteo el valor por default	
+	if(@filtroSeleccionEncuestadores == 0){
+		$filtroSeleccionEncuestadores[0] = "*";
+	}
+	if($filtroSeleccionCodigoEncuesta eq ""){
+		$filtroSeleccionCodigoEncuesta = "*";
+	}
+	if($filtroSeleccionNroEncuesta eq ""){
+		$filtroSeleccionNroEncuesta = "*";
+	}
+	if($filtroSeleccionModalidad eq ""){
+		$filtroSeleccionModalidad = "*";
+	}
 	
 	return 0;
 }
 
-# necesita de $filtroSeleccionEncuestadores
+# necesita de @filtroSeleccionEncuestadores
 # recibe $encuestador
 sub esEncuestadorSeleccionado{
-	if($filtroSeleccionEncuestadores eq "*"){
+	DEBUG "@filtroSeleccionEncuestadores \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionEncuestadores[0] eq "*"){
 		return 1;
 	}
 	
 	$encuestador = $_[0];
-	
-	if(lc($encuestador) eq lc($filtroSeleccionEncuestadores)){
-		return 1;
+
+	foreach $filtro (@filtroSeleccionEncuestadores){	
+		if(lc($encuestador) eq lc($filtro) || lc($encuestador) =~ /$filtro/){
+			return 1;
+		}
 	}
-	
-	if($encuestador =~ m/$filtroSeleccionEncuestadores/){
-		return 1;
-	}else{
-		return 0;
-	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionNroEncuesta
@@ -309,7 +334,7 @@ sub esEncuestaSeleccionada{
 	$codigoEncuesta=$_[2];
 	$modalidad=$_[3];
 	
-	if(esEncuestadorSeleccionado($encuestador) || esNroEncuestaSeleccionada($nroEncuesta) || esCodigoEncuestaSeleccionado($codigoEncuesta) || esModalidadSeleccionada($modalidad)){
+	if(esEncuestadorSeleccionado($encuestador)){# || esNroEncuestaSeleccionada($nroEncuesta) || esCodigoEncuestaSeleccionado($codigoEncuesta) || esModalidadSeleccionada($modalidad)){
 		return 1;
 	}else{
 		return 0;
@@ -325,18 +350,9 @@ sub obtenerColorPuntaje{
 	$puntajeObtenido = $_[1];
 	$color = "ERROR-color-desconocido";
 
-
-	# Using 'keys' in a 'foreach' loop
-	#  * This method has the advantage that it's possible to sort the output by key.
-	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
-	# foreach my $key ( keys %infoEncuestasMaestro ){
-
 	# Using 'each' in a 'while' loop
 	#  * This method's advantage is that it uses very little memory (every time 'each' is called it only returns a pair of (key, value) element).
 	#  * The disadvantage is that you can't order the output by key.
-	# while ( $key = each %infoEncuestasMaestro )
-
-	
 	while ( $key = each %infoEncuestasMaestro ){
 		if($key eq $codigoEncuesta){
 			DEBUG "key: $key -> $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
@@ -512,8 +528,15 @@ sub obtenerInfoEncuestasSumarizadas{
 sub generarIdArchivoResultado{
 	
 	# TODO: mejorar la forma en la cual garantizo que el id sea siempre único
-	# este sleep es para garantizar que siempre retorne un id diferente
-	sleep 1;
+	
+	if(open(FILE_HANDLER_TEST, $pathYNombreArchivoResultados.$idArchivo)){
+		close(FILE_HANDLER_TEST);
+
+		# este sleep es para que si lo ejecutan más de una vez por segundo,
+		# espere para que cambie el id del archivo y así "garantizar"
+		# que siempre retorne un id diferente
+		sleep 1;
+	}
 	
 	( $seg, $min, $hs, $dia, $mes, $anio ) = ( localtime ) [ 0, 1, 2, 3, 4, 5 ];
 	return sprintf("%4d%02d%02d-%02d%02d%02d", $anio+1900, $mes+1, $dia, $hs, $min, $seg);
@@ -534,6 +557,9 @@ sub entregarResultados{
 		GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
 	}
 
+	# Using 'keys' in a 'foreach' loop
+	#  * This method has the advantage that it's possible to sort the output by key.
+	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
 	foreach my $key (sort keys %encuestasSeleccionadas){
 		
 		# Esto es para inicializar en cero
