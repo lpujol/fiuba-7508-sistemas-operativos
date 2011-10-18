@@ -11,7 +11,7 @@ Instrucciones de instalacion
 	$ vf tp-grupo01
 	$ chmod u+rx instalarC.sh
 5. Ejecute el instalador:
-	$ ./instalarC.sh
+	$ . instalarC.sh
 
 En este punto el programa ya esta instalado y listo para usar.
 
