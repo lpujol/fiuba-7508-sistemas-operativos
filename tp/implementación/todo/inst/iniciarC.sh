@@ -140,7 +140,7 @@ function otorgarPermisoEjecucion(){
 
 function checkearDetectarC(){
 	PIDDETECTARC=`ps | grep "detectarC.sh" | head -1 | awk '{print $1 }'`	
-	if [ "$PIDDETECTARC" != "" ]; then
+	if [ ! "$PIDDETECTARC"="" ]; then
 		return $PIDDETECTARC
 	fi
 	return 0
