@@ -96,10 +96,13 @@ function cargarVariables() {
 		if [ "$LOGEXT" == "" ]; then
 			LOGEXT=`grep "LOGEXT" $CONFFILE | cut -s -f2 -d'='`
 		fi
-		export LOGEXT			
+		export LOGEXT
+    else 
+		return 1 		
 	fi	
 	PATH=$PATH:$GRUPO:$GRUPO/$BINDIR"/"
 	export PATH
+	return 0
 }
 
 function checkearInstalacion(){
@@ -163,6 +166,11 @@ checkearEntornoNoIniciado
 		done				
 	fi
 cargarVariables
+	if [ $? -eq 1 ]; then 
+		echo "Inicialización de Ambiente No fue exitosa." 
+		echo "Error: No se archivo de configuración" 
+		return 1 
+	fi
 checkearInstalacion
 	if [ $? -eq 1 ]; then
 		echo "Inicialización de Ambiente No fue exitosa."
