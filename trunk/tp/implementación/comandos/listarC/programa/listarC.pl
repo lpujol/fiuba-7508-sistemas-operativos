@@ -692,7 +692,7 @@ sub entregarResultados{
 		if(defined $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"}){
 			$stringReporte = $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"};
 		}else{
-			$stringReporte = "La encuesta número " . $filtroSeleccionNroEncuesta[0] . " no fue encontrada.";
+			$stringReporte = "La encuesta número " . $filtroSeleccionNroEncuesta[0] . " no fue encontrada. Argumentos recibidos: " . "@ARGV" . "\n";
 		}
 
 		if($mostrarResultadosEnPantalla == 1){
@@ -705,49 +705,63 @@ sub entregarResultados{
 			GUARDAR_EN_ARCHIVO($idArchivo, $stringReporte);
 		}
 	}else{
-		$strSeparadorColumnasResultados = "\t\t\t";
-		$stringEncabezadoResultado = "CRITERIO" . $strSeparadorColumnasResultados . "VERDE" . $strSeparadorColumnasResultados . "AMARILLO" . $strSeparadorColumnasResultados . "ROJO" . "\n";
-		
-		if($mostrarResultadosEnPantalla == 1){
-			MOSTRAR_EN_PANTALLA($stringEncabezadoResultado);
-		}
-	
-		$idArchivo = "";
-		if($guardarResultadosEnArchivo == 1){
-			$idArchivo = generarIdArchivoResultado();
-			GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
-		}
-	
-		# Using 'keys' in a 'foreach' loop
-		#  * This method has the advantage that it's possible to sort the output by key.
-		#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
-		foreach my $key (sort keys %encuestasSeleccionadas){
-			
-			# Esto es para inicializar en cero
-			if($encuestasSeleccionadas{$key}{"verde"}){
-				;
-			}else{
-				$encuestasSeleccionadas{$key}{"verde"} = 0;
-			}
-			if($encuestasSeleccionadas{$key}{"amarillo"}){
-				;
-			}else{
-				$encuestasSeleccionadas{$key}{"amarillo"} = 0;
-			}
-			if($encuestasSeleccionadas{$key}{"rojo"}){
-				;
-			}else{
-				$encuestasSeleccionadas{$key}{"rojo"} = 0;
-			}
-	
-			$stringResultado = $key . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"verde"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"amarillo"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"rojo"} . "\n";
+		if(keys( %encuestasSeleccionadas ) == 0){
+			$stringReporte = "No fue encontrada ninguna encuesta para la selección especificada. Argumentos recibidos: " . "@ARGV" . "\n";
 	
 			if($mostrarResultadosEnPantalla == 1){
-				MOSTRAR_EN_PANTALLA($stringResultado);
+				MOSTRAR_EN_PANTALLA($stringReporte);
 			}
-	
+		
+			$idArchivo = "";
 			if($guardarResultadosEnArchivo == 1){
-				GUARDAR_EN_ARCHIVO($idArchivo, $stringResultado);
+				$idArchivo = generarIdArchivoResultado();
+				GUARDAR_EN_ARCHIVO($idArchivo, $stringReporte);
+			}
+		}else{
+			$strSeparadorColumnasResultados = "\t\t\t";
+			$stringEncabezadoResultado = "CRITERIO" . $strSeparadorColumnasResultados . "VERDE" . $strSeparadorColumnasResultados . "AMARILLO" . $strSeparadorColumnasResultados . "ROJO" . "\n";
+			
+			if($mostrarResultadosEnPantalla == 1){
+				MOSTRAR_EN_PANTALLA($stringEncabezadoResultado);
+			}
+		
+			$idArchivo = "";
+			if($guardarResultadosEnArchivo == 1){
+				$idArchivo = generarIdArchivoResultado();
+				GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
+			}
+		
+			# Using 'keys' in a 'foreach' loop
+			#  * This method has the advantage that it's possible to sort the output by key.
+			#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
+			foreach my $key (sort keys %encuestasSeleccionadas){
+				
+				# Esto es para inicializar en cero
+				if($encuestasSeleccionadas{$key}{"verde"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"verde"} = 0;
+				}
+				if($encuestasSeleccionadas{$key}{"amarillo"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"amarillo"} = 0;
+				}
+				if($encuestasSeleccionadas{$key}{"rojo"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"rojo"} = 0;
+				}
+		
+				$stringResultado = $key . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"verde"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"amarillo"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"rojo"} . "\n";
+		
+				if($mostrarResultadosEnPantalla == 1){
+					MOSTRAR_EN_PANTALLA($stringResultado);
+				}
+		
+				if($guardarResultadosEnArchivo == 1){
+					GUARDAR_EN_ARCHIVO($idArchivo, $stringResultado);
+				}
 			}
 		}
 	}
