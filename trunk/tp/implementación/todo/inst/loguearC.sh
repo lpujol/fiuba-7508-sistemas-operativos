@@ -111,17 +111,17 @@ function writeLog
 
 	#Examinar tamano de archivo de log
 	logsize=`stat -c "%s" $logfile`
-	if [ $logsize -gt `expr $MAXLOGSIZE \* 1024 - ${#logentry}` ]; then
+	if [ $logsize -gt `expr $LOGSIZE \* 1024 - ${#logentry}` ]; then
 		#Si esta demasiado grande, borrar 50 porcientos de las lineas
 		#Calcular numero de lineas 
 		loglines=`grep -c '' $logfile`
 		sed -i "1,`expr $loglines \/ 2` d" $logfile
 
-		logfullentry="$logtime,$logusuario,A500,Log excedido, se corta: había más de $MAXLOGSIZE kb,"
+		logfullentry="$logtime,$logusuario,A500,Log excedido, se corta: había más de $LOGSIZE kb,"
 		grabarLog "$logfullentry" "$logfile"
 
 		#Mensaje a stdout
-		echo "Log excedido, había más de $MAXLOGSIZE kb, se corta"
+		echo "Log excedido, había más de $LOGSIZE kb, se corta"
 	fi
 
 	#Escribir
