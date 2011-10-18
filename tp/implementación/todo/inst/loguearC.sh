@@ -91,12 +91,12 @@ function writeLog
 	logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)$/\2/'`
 	if [ ${#logtipo2} -gt 0 ]; then
 		#Existe Archivo de maestro?
-		if [ \! -f "$DATAMAE/errores.mae" ]; then
+		if [ \! -f "$GRUPO/$DATAMAE/errores.mae" ]; then
 			echo No encuentro el maestro de errores
 			logfaltamae="$logtime,$logusuario,E999,LoguearC:Maestro de errores no existe, siguiente Mensaje sin este información"
 			grabarLog "$logfaltamae" "$logfile"
 		else
-			logmsg=`sed -n "s|^\($logtipo2\),\(.*\)|\2: $logmsg|p" "$DATAMAE/errores.mae"`
+			logmsg=`sed -n "s|^\($logtipo2\),\(.*\)|\2: $logmsg|p" "$GRUPO/$DATAMAE/errores.mae"`
 		fi
 	fi
 
@@ -148,12 +148,6 @@ function viewLog
 		grep  "^\([^,]*\)[,]\([^,]*\)[,]\([^,]*\)$logtipo\([^,]*\)[,][^,]*$logmsg" "$logfile" | tail -$logviewlineas
 	fi
 } #fin de viewLog
-
- 
-#Umgebungsvariablen, später löschen
-#GRUPO='/home/havoc/tpMy'
-
-#DATAMAE="$GRUPO/mae"
 
 #Ambiente iniciado?
 if [ -z $GRUPO ] 
