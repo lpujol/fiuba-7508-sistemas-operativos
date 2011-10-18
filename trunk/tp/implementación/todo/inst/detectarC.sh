@@ -59,7 +59,7 @@ cd $GRUPO/$ARRIDIR
 COUNTER=1 # Este es el contador de veces que se debe ejecutar el loop
 	  # principal. Como debe correr indefinidamente, no va a ser
 	  # incrementado.
-REGEXP_FORMATO_VALIDO='^\./(19|20)[0-9][0-9](0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[01])\.\w{8}$' 
+REGEXP_FORMATO_VALIDO='^(19|20)[0-9][0-9](0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[01])\.\w{8}$' 
 MENSAJE_ACEPTADO="Archivo de encuestas aceptado:"
 MENSAJE_USUARIO_INVALIDO="Archivo de encuestas rechazado porque el user_id no existe:"
 MENSAJE_FECHA_INVALIDA="Archivo de encuestas rechazado porque la fecha no es válida:"
@@ -67,19 +67,19 @@ MENSAJE_FORMATO_INVALIDO="Archivo de encuestas rechazado porque el nombre no es 
 
 while [ $COUNTER -eq 1 ]; do
 	# Por cada archivo del directorio de arribos
-	for file in `find . -type f -maxdepth 1 -print 2>/dev/null`; do
+	for file in `ls -1tr .`; do
 		if echo $file | grep -Eq "$REGEXP_FORMATO_VALIDO" 
 		then
 		    FECHA_VALIDA=0
 		    ENCONTRADO=0
 			# El FORMATO es valido (todavia hay que chequear que sea valida la 
 			# fecha y el userid
-			USERID_ENTRANTE=`echo $file | cut -d . -f 3`
+			USERID_ENTRANTE=`echo $file | cut -d . -f 2`
 			exec < "$GRUPO/$DATAMAE/encuestadores.mae"
 			while read linea; do
 				if [ $USERID_ENTRANTE = `echo $linea | cut -b 1-8` ]; then
 				    ENCONTRADO=1
-				    FECHA=`echo $file | cut -b 3-10`
+				    FECHA=`echo $file | cut -b 1-8`
 				    FECHA_DESDE=`echo $linea | cut -d , -f 4`
 				    FECHA_HASTA=`echo $linea | cut -d , -f 5`
 					validarFecha $FECHA $FECHA_DESDE $FECHA_HASTA
@@ -106,13 +106,16 @@ while [ $COUNTER -eq 1 ]; do
 	    chequearProcesoSumarC
 	    if [ $? -ne 0 ]; then
 		    echo "sumarC ya estaba en ejecución con PID $PID_SUMARC"
+		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "Se intentó correr sumarC, pero ya estaba en ejecucion" -p "detectarC"
     	else
     	    $GRUPO/$BINDIR/sumarC.sh > /dev/null 2>&1
     	    chequearProcesoSumarC
 	        if [ $? -ne 0 ]; then
 		        echo "sumarC corriendo con PID $PID_SUMARC"
+		        $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "sumarC corriendo con PID $PID_SUMARC" -p "detectarC"
     		else
-		        echo "No se pudo ejecutar el script sumarC.sh"
+		        echo "No se pudo ejecutar el script sumarC"
+		        $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "No se pudo ejecutar el script sumarC" -p "detectarC"
         	fi
         fi
 	fi
