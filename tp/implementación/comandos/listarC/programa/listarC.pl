@@ -22,7 +22,8 @@
 #
 # PARÁMETROS
 #
-# NINGUNO de los parámetros ni opciones es case-sensitive.
+# NINGUNO de los valores de los parámetros es case-sensitive.
+# TODOS los valores de los parámetros pueden expresarse como expresiones regulares.
 #
 # Los parámetros pueden ser:
 #  -enc, --encuestador
@@ -32,10 +33,10 @@
 #  -h, --help
 #  -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas)
 #
-# Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)
-# Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)
-# Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles
-# Valores posibles para el parámetro a:              x-cod, x-enc o x-ambos
+# Valores posibles para los parámetros enc, cod:  1, 2, n, * (todos)
+# Valores posibles para el parámetro n:           nro de encuesta, un rango de ellas, * (todos)
+# Valores posibles para el parámetro m:           e (electrónica), t (telefónica), c (correo convencional) o p (presencial) y todas sus combinaciones posibles
+# Valores posibles para el parámetro a:           x-cod, x-enc o * (ambos)
 #
 # En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
 #
@@ -50,12 +51,12 @@
 # Variables seteadas a partir de los argumentos recibidos por el programa
                                         # parámetro que lo controla
 my @filtroSeleccionEncuestadores = ();  # -enc, --encuestador
-my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
-my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
-my $filtroSeleccionModalidad = "";      # -m, --modalidad
+my @filtroSeleccionCodigoEncuesta = (); # -cod, --código-de-encuesta
+my @filtroSeleccionNroEncuesta = ();    # -n, --nro-de-encuesta
+my @filtroSeleccionModalidad = ();      # -m, --modalidad
 my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
-my $agrupamiento = "x-ambos";           # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "x-ambos")
+my $agrupamiento = "*";                 # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "*")
 
 
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
@@ -104,6 +105,7 @@ sub GUARDAR_EN_ARCHIVO{
 sub mostrarAyuda{
 	print "\n====== AYUDA ======\n";
 	print "\nNINGUNO de los parámetros ni opciones es case-sensitive.\n";
+	print "\nTODOS los valores de los parámetros pueden expresarse como expresiones regulares.\n";
 	print "Los parámetros pueden ser:\n";
 	print " -enc, --encuestador\n";
 	print " -cod, --código-de-encuesta\n";
@@ -115,10 +117,10 @@ sub mostrarAyuda{
 	print "\n";
 	
 	print "Valores posibles para:\n";
-	print " * los parámetros enc, cod, m:  1, 2, n, * (todos)\n";
-	print " * el parámetro n:              nro de encuesta, un rango de ellas, * (todos)\n";
-	print " * el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles\n";
-	print " * el parámetro a:              x-cod, x-enc o x-ambos\n";
+	print " * los parámetros enc, cod:  1, 2, n, * (todos)\n";
+	print " * el parámetro n:           nro de encuesta, un rango de ellas, * (todos)\n";
+	print " * el parámetro m:           e (electrónica), t (telefónica), c (correo convencional), p (presencial), * (todas)\n";
+	print " * el parámetro a:           x-cod, x-enc o *\n";
 	
 	print "\n";
 
@@ -126,7 +128,7 @@ sub mostrarAyuda{
 	print " * los parámetros enc, cod, m:  * (todos)\n";
 	print " * el parámetro n:              * (todos)\n";
 	print " * el parámetro m:              todas las modalidades\n";
-	print " * el parámetro a:              x-ambos\n";
+	print " * el parámetro a:              ambos\n";
 	
 	print "\n";
 	
@@ -203,7 +205,7 @@ sub procesarArgumentos{
 					}
 
 					else{
-						DEBUG "ERROR: argumento desconocido!, \$param=$param\n";
+						MOSTRAR_ERROR "ERROR: argumento desconocido!, \$param=$param\n";
 						return 1;
 					}
 				}
@@ -215,17 +217,17 @@ sub procesarArgumentos{
 			}
 	
 			case("recibiendo-valor-codigo-encuesta"){
-				$filtroSeleccionCodigoEncuesta = $param;
+				push(@filtroSeleccionCodigoEncuesta, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-nro-encuesta"){
-				$filtroSeleccionNroEncuesta = $param;
+				push(@filtroSeleccionNroEncuesta, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-modalidad"){
-				$filtroSeleccionModalidad = $param;
+				push(@filtroSeleccionModalidad, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 			
@@ -242,17 +244,17 @@ sub procesarArgumentos{
 	DEBUG "\n";
 
 	# Si alguno no fue seteado por los parámetros recibidos, entonces le seteo el valor por default	
-	if(@filtroSeleccionEncuestadores == 0){
+	if(!(@filtroSeleccionEncuestadores)){
 		$filtroSeleccionEncuestadores[0] = "*";
 	}
-	if($filtroSeleccionCodigoEncuesta eq ""){
-		$filtroSeleccionCodigoEncuesta = "*";
+	if(!(@filtroSeleccionCodigoEncuesta)){
+		$filtroSeleccionCodigoEncuesta[0] = "*";
 	}
-	if($filtroSeleccionNroEncuesta eq ""){
-		$filtroSeleccionNroEncuesta = "*";
+	if(!(@filtroSeleccionNroEncuesta)){
+		$filtroSeleccionNroEncuesta[0] = "*";
 	}
-	if($filtroSeleccionModalidad eq ""){
-		$filtroSeleccionModalidad = "*";
+	if(!(@filtroSeleccionModalidad)){
+		$filtroSeleccionModalidad[0] = "*";
 	}
 	
 	return 0;
@@ -282,49 +284,64 @@ sub esEncuestadorSeleccionado{
 # necesita de $filtroSeleccionNroEncuesta
 # recibe $nroEncuesta
 sub esNroEncuestaSeleccionada{
-	if($filtroSeleccionNroEncuesta eq "*"){
+	DEBUG "@filtroSeleccionNroEncuesta \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionNroEncuesta[0] eq "*"){
 		return 1;
 	}
 	
 	$nroEncuesta = $_[0];
-	
-	if($nroEncuesta =~ m/$filtroSeleccionNroEncuesta/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionNroEncuesta){	
+		if(lc($nroEncuesta) eq lc($filtro) || lc($nroEncuesta) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionCodigoEncuesta
 # recibe $codigoEncuesta
 sub esCodigoEncuestaSeleccionado{
-	if($filtroSeleccionCodigoEncuesta eq "*"){
+	DEBUG "@filtroSeleccionCodigoEncuesta \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionCodigoEncuesta[0] eq "*"){
 		return 1;
 	}
 	
 	$codigoEncuesta = $_[0];
-	
-	if($codigoEncuesta =~ m/$filtroSeleccionCodigoEncuesta/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionCodigoEncuesta){	
+		if(lc($codigoEncuesta) eq lc($filtro) || lc($codigoEncuesta) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionModalidad
 # recibe $modalidad
 sub esModalidadSeleccionada{
-	if($filtroSeleccionModalidad eq "*"){
+	DEBUG "@filtroSeleccionModalidad \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionModalidad[0] eq "*"){
 		return 1;
 	}
 	
 	$modalidad = $_[0];
-	
-	if($modalidad =~ m/$filtroSeleccionModalidad/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionModalidad){	
+		if(lc($modalidad) eq lc($filtro) || lc($modalidad) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # recibe $encuestador, $nroEncuesta, $codigoEncuesta, $modalidad
@@ -333,8 +350,8 @@ sub esEncuestaSeleccionada{
 	$nroEncuesta=$_[1];
 	$codigoEncuesta=$_[2];
 	$modalidad=$_[3];
-	
-	if(esEncuestadorSeleccionado($encuestador)){# || esNroEncuestaSeleccionada($nroEncuesta) || esCodigoEncuestaSeleccionado($codigoEncuesta) || esModalidadSeleccionada($modalidad)){
+
+	if(esEncuestadorSeleccionado($encuestador) && esNroEncuestaSeleccionada($nroEncuesta) && esCodigoEncuestaSeleccionado($codigoEncuesta) && esModalidadSeleccionada($modalidad)){
 		return 1;
 	}else{
 		return 0;
@@ -402,7 +419,7 @@ sub obtenerGrupoDeOrdenamiento{
 			$grupoDeOrdenamiento = $encuestador;
 		}
 		
-		case ("x-ambos"){
+		case ("*"){
 			$grupoDeOrdenamiento = $encuestador . "." . $codigoEncuesta;
 		}
 		
