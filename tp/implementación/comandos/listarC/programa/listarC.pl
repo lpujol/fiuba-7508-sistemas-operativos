@@ -28,12 +28,12 @@
 #
 # Interacción de este programa con el resto del sistema:
 #  Necesita de los archivos:
-#   ../ya/encuestas.sum
-#   ../mae/encuestas.mae
-#   ../mae/preguntas.mae
-#   ../mae/encuestadores.mae
+#   $GRUPO/ya/encuestas.sum
+#   $GRUPO/$DATAMAE/encuestas.mae
+#   $GRUPO/$DATAMAE/preguntas.mae
+#   $GRUPO/$DATAMAE/encuestadores.mae
 #
-#  Los informes se graban en el directorio: ../ya
+#  Los informes se graban en el directorio: $GRUPO/ya/
 #
 #  No escribe logs
 #
