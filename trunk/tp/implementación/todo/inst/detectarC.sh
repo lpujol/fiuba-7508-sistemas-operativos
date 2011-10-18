@@ -102,7 +102,7 @@ while [ $COUNTER -eq 1 ]; do
 		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "detectarC"
 		fi
 	done
-	if [ "$(ls -A $DIR_APROBADOS)" ]; then
+	if [ "$(ls -1tr $DIR_APROBADOS)" ]; then
 	    chequearProcesoSumarC
 	    if [ $? -ne 0 ]; then
 		    echo "sumarC ya estaba en ejecución con PID $PID_SUMARC"
