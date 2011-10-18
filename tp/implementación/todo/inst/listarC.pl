@@ -6,19 +6,43 @@
 # $Id$
 #
 
+
+#
+# TODO: ME FALTA HACER ESTO!!!
+#
+# 12.Otra consulta puede estar dada por un nro de encuesta específico.
+#    En este caso lo que se debe mostrar son todos los detalles del registro,
+#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
+#    nombre de la encuesta, cantidad de preguntas y  a continuación del puntaje
+#    obtenido, indicar el color que le corresponde.
+#
+# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
+# Cliente ccc, Modalidad x, sitio y, persona z
+# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
+# Puntaje obtenido: nnn calificación: <color>
+#
+
+
+
+
 #
 # Interacción de este programa con el resto del sistema:
 #  Necesita de los archivos:
-#   ../ya/encuestas.sum
-#   ../mae/encuestas.mae
-#   ../mae/preguntas.mae
-#   ../mae/encuestadores.mae
+#   $GRUPO/ya/encuestas.sum
+#   $GRUPO/$DATAMAE/encuestas.mae
+#   $GRUPO/$DATAMAE/preguntas.mae
+#   $GRUPO/$DATAMAE/encuestadores.mae
 #
-#  Los informes se graban en el directorio: ../ya
+#  Los informes se graban en el directorio: $GRUPO/ya/
 #
 #  No escribe logs
 #
 
+#
+# PARÁMETROS
+#
+# NINGUNO de los valores de los parámetros es case-sensitive.
+# TODOS los valores de los parámetros pueden expresarse como expresiones regulares.
 #
 # Los parámetros pueden ser:
 #  -enc, --encuestador
@@ -26,10 +50,12 @@
 #  -n, --nro-de-encuesta
 #  -m, --modalidad
 #  -h, --help
+#  -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas)
 #
-# Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)
-# Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)
-# Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles
+# Valores posibles para los parámetros enc, cod:  1, 2, n, * (todos)
+# Valores posibles para el parámetro n:           nro de encuesta, un rango de ellas, * (todos)
+# Valores posibles para el parámetro m:           e (electrónica), t (telefónica), c (correo convencional) o p (presencial) y todas sus combinaciones posibles
+# Valores posibles para el parámetro a:           x-cod, x-enc o * (ambos)
 #
 # En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
 #
@@ -39,63 +65,31 @@
 # O la combinación de ellas.
 #
 
-#
-# Formatos de los archivos maestros
-#
-# Preguntas: $grupo/mae/preguntas.mae
-#   Campo            | Descripción o valor
-# ---------------------------------------------------------------
-# 1. Id de Pregunta   | Numérico
-# 2. Pregunta         | N caracteres
-# 3. Tipo de Pregunta | Valores posibles: + (positiva), - (negativa)
-# 4. Ponderación      | Valores posibles: ALTA, MEDIA, BAJA
-#
-# Separador de campos: , coma.
-#
-# Ejemplos:
-#  110, Posee Numero de CUIT,+,ALTA
-#  111, Quiere contratar servicios premium,+,ALTA
-#  120, Tiene domicilio en capital,+,MEDIA
-#  121, Quiere contratar servicios estandard,+,MEDIA
-#  130, Es un referido,+,BAJA
-#  131, Usa habitualmente el debito automatico,+,BAJA
-#  210, Tiene deuda atrasada en mas de 3 meses,-,ALTA
-#  211, Tiene acción judicial pendiente,-,ALTA
-#  220, Cambia regularmente de proveedor,-,MEDIA
-#  221, No posee referencias,-,MEDIA
-#  230, Está buscando dar de baja servicios,-,BAJA
-#  231, Esta en el límite del area de cobertura,-,BAJA
-#
-
 
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
-#
                                         # parámetro que lo controla
-my $filtroSeleccionEncuestadores = "";  # -enc, --encuestador
-my $filtroSeleccionCodigoEncuesta = ""; # -cod, --código-de-encuesta
-my $filtroSeleccionNroEncuesta = "";    # -n, --nro-de-encuesta
-my $filtroSeleccionModalidad = "";      # -m, --modalidad
+my @filtroSeleccionEncuestadores = ();  # -enc, --encuestador
+my @filtroSeleccionCodigoEncuesta = (); # -cod, --código-de-encuesta
+my @filtroSeleccionNroEncuesta = ();    # -n, --nro-de-encuesta
+my @filtroSeleccionModalidad = ();      # -m, --modalidad
 my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
-
-
-my $agruparEncuestasPorEncuestador = 1; # esto debería poder setearse a través de algún nuevo parámetro del programa
+my $agrupamiento = "*";                 # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "*")
 
 
 # Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
 my %infoEncuestasMaestro = ();
 
-
-# Hash en el que almacenaré las encuestas seleccionadas
+# Hash en el que almacenaré las encuestas seleccionadas por los criterios del "query"
 my %encuestasSeleccionadas = ();
 
 
 #
 # Variables de entorno
-my $pathArchivosMaestros = "../mae/";  # = $grupo/mae
-my $pathArchivosYa = "../ya/";         # = $grupo/ya
-my $pathArchivosResultados = "../ya/"; # = $grupo/ya
+my $pathArchivosMaestros = $ENV{"GRUPO"}.$ENV{"DATAMAE"}."/";
+my $pathArchivosYa = $ENV{"GRUPO"}."/ya/";
+my $pathArchivosResultados = $ENV{"GRUPO"}."/ya/";
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
@@ -116,6 +110,7 @@ sub MOSTRAR_EN_PANTALLA{
 	print @_;
 }
 
+# necesita de $pathYNombreArchivoResultados
 # recibe $idArchivo, $strAGuardar
 sub GUARDAR_EN_ARCHIVO{
 	$idArchivo = $_[0];
@@ -127,19 +122,32 @@ sub GUARDAR_EN_ARCHIVO{
 }
 
 sub mostrarAyuda{
-	print "\nAYUDA\n";
+	print "\n====== AYUDA ======\n";
+	print "\nNINGUNO de los parámetros ni opciones es case-sensitive.\n";
+	print "\nTODOS los valores de los parámetros pueden expresarse como expresiones regulares.\n";
 	print "Los parámetros pueden ser:\n";
 	print " -enc, --encuestador\n";
 	print " -cod, --código-de-encuesta\n";
 	print " -n, --nro-de-encuesta\n";
 	print " -m, --modalidad\n";
+	print " -a, --agrupamiento\n";
 	print " -h, --help\n";
 	
 	print "\n";
 	
-	print "Valores posibles para los parámetros enc, cod, m:  1, 2, n, * (todos)\n";
-	print "Valores posibles para el parámetro n:              nro de encuesta, un rango de ellas, * (todos)\n";
-	print "Valores posibles para el parámetro m:              E (electrónica), T (telefónica), C (correo convencional) o P (presencial) y todas sus combinaciones posibles\n";
+	print "Valores posibles para:\n";
+	print " * los parámetros enc, cod:  1, 2, n, * (todos)\n";
+	print " * el parámetro n:           nro de encuesta, un rango de ellas, * (todos)\n";
+	print " * el parámetro m:           e (electrónica), t (telefónica), c (correo convencional), p (presencial), * (todas)\n";
+	print " * el parámetro a:           x-cod, x-enc o *\n";
+	
+	print "\n";
+
+	print "Valores default para:\n";
+	print " * los parámetros enc, cod, m:  * (todos)\n";
+	print " * el parámetro n:              * (todos)\n";
+	print " * el parámetro m:              todas las modalidades\n";
+	print " * el parámetro a:              ambos\n";
 	
 	print "\n";
 	
@@ -152,7 +160,7 @@ sub mostrarAyuda{
 	print " -e (resuelve y emite un informe)\n";
 	print "O la combinación de ellas.\n";
 	
-	print "\n";
+	print "\n==== FIN AYUDA ====\n";
 }
 
 # recibe @ARGV
@@ -165,10 +173,9 @@ sub procesarArgumentos{
 	
 	foreach $param (@_) {
 	
-	
 		switch ($estado_procesador_de_argumentos){
 			case("recibiendo-tipo-parametro") {
-				switch($param){
+				switch(lc($param)){
 					case["-enc", "--encuestador"]{
 						DEBUG("\$param = $param\n");
 						$estado_procesador_de_argumentos = "recibiendo-valor-encuestador";
@@ -189,6 +196,11 @@ sub procesarArgumentos{
 						$estado_procesador_de_argumentos = "recibiendo-valor-modalidad";
 					}
 			
+					case["-a", "--agrupamiento"]{
+						DEBUG "\$param = $param\n";
+						$estado_procesador_de_argumentos = "recibiendo-valor-agrupamiento";
+					}
+			
 					case["-h", "--help"]{
 						DEBUG "\$param = $param\n";
 						mostrarAyuda();
@@ -204,32 +216,42 @@ sub procesarArgumentos{
 						DEBUG "\$param = $param\n";
 						$guardarResultadosEnArchivo = 1;
 					}
-			
+					
+					case["-ce", "-ec"]{
+						DEBUG "\$param = $param\n";
+						$mostrarResultadosEnPantalla = 1;
+						$guardarResultadosEnArchivo = 1;
+					}
+
 					else{
-						DEBUG "ERROR: argumento desconocido!, \$param=$param\n";
+						MOSTRAR_ERROR "ERROR: argumento desconocido!, \$param=$param\n";
 						return 1;
 					}
 				}
 			}
 	
 			case("recibiendo-valor-encuestador"){
-				$filtroSeleccionEncuestadores = $param;
+				push(@filtroSeleccionEncuestadores, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-codigo-encuesta"){
-				$codigoEncuesta = $param;
+				push(@filtroSeleccionCodigoEncuesta, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-nro-encuesta"){
-				$nroEncuesta = $param;
+				push(@filtroSeleccionNroEncuesta, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
 			}
 	
 			case("recibiendo-valor-modalidad"){
-				$modalidad = $param;
+				push(@filtroSeleccionModalidad, $param);
 				$estado_procesador_de_argumentos = "recibiendo-tipo-parametro";
+			}
+			
+			case("recibiendo-valor-agrupamiento"){
+				$agrupamiento = $param;
 			}
 	
 			else{
@@ -239,72 +261,106 @@ sub procesarArgumentos{
 		}
 	}
 	DEBUG "\n";
+
+	# Si alguno no fue seteado por los parámetros recibidos, entonces le seteo el valor por default	
+	if(!(@filtroSeleccionEncuestadores)){
+		$filtroSeleccionEncuestadores[0] = "*";
+	}
+	if(!(@filtroSeleccionCodigoEncuesta)){
+		$filtroSeleccionCodigoEncuesta[0] = "*";
+	}
+	if(!(@filtroSeleccionNroEncuesta)){
+		$filtroSeleccionNroEncuesta[0] = "*";
+	}
+	if(!(@filtroSeleccionModalidad)){
+		$filtroSeleccionModalidad[0] = "*";
+	}
 	
 	return 0;
 }
 
-# necesita de $filtroSeleccionEncuestadores
-#recibe $encuestador
+# necesita de @filtroSeleccionEncuestadores
+# recibe $encuestador
 sub esEncuestadorSeleccionado{
-	if($filtroSeleccionEncuestadores eq "*"){
+	DEBUG "@filtroSeleccionEncuestadores \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionEncuestadores[0] eq "*"){
 		return 1;
 	}
 	
 	$encuestador = $_[0];
-	
-	if($encuestador =~ m/$filtroSeleccionEncuestadores/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionEncuestadores){	
+		if(lc($encuestador) eq lc($filtro) || lc($encuestador) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionNroEncuesta
 # recibe $nroEncuesta
 sub esNroEncuestaSeleccionada{
-	if($filtroSeleccionNroEncuesta eq "*"){
+	DEBUG "@filtroSeleccionNroEncuesta \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionNroEncuesta[0] eq "*"){
 		return 1;
 	}
 	
 	$nroEncuesta = $_[0];
-	
-	if($nroEncuesta =~ m/$filtroSeleccionNroEncuesta/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionNroEncuesta){	
+		if(lc($nroEncuesta) eq lc($filtro) || lc($nroEncuesta) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionCodigoEncuesta
-# recibe $nroEncuesta
+# recibe $codigoEncuesta
 sub esCodigoEncuestaSeleccionado{
-	if($filtroSeleccionCodigoEncuesta eq "*"){
+	DEBUG "@filtroSeleccionCodigoEncuesta \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionCodigoEncuesta[0] eq "*"){
 		return 1;
 	}
 	
 	$codigoEncuesta = $_[0];
-	
-	if($codigoEncuesta =~ m/$filtroSeleccionCodigoEncuesta/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionCodigoEncuesta){	
+		if(lc($codigoEncuesta) eq lc($filtro) || lc($codigoEncuesta) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # necesita de $filtroSeleccionModalidad
 # recibe $modalidad
 sub esModalidadSeleccionada{
-	if($filtroSeleccionModalidad eq "*"){
+	DEBUG "@filtroSeleccionModalidad \n";
+	
+	# si el array tiene el valor default, salgo inmediatamente contestando true al matching
+	if($filtroSeleccionModalidad[0] eq "*"){
 		return 1;
 	}
 	
 	$modalidad = $_[0];
-	
-	if($modalidad =~ m/$filtroSeleccionModalidad/){
-		return 1;
-	}else{
-		return 0;
+
+	foreach $filtro (@filtroSeleccionModalidad){	
+		if(lc($modalidad) eq lc($filtro) || lc($modalidad) =~ /$filtro/){
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 # recibe $encuestador, $nroEncuesta, $codigoEncuesta, $modalidad
@@ -313,8 +369,8 @@ sub esEncuestaSeleccionada{
 	$nroEncuesta=$_[1];
 	$codigoEncuesta=$_[2];
 	$modalidad=$_[3];
-	
-	if(esEncuestadorSeleccionado($encuestador) || esNroEncuestaSeleccionada($nroEncuesta) || esCodigoEncuestaSeleccionado($codigoEncuesta) || esModalidadSeleccionada($modalidad)){
+
+	if(esEncuestadorSeleccionado($encuestador) && esNroEncuestaSeleccionada($nroEncuesta) && esCodigoEncuestaSeleccionado($codigoEncuesta) && esModalidadSeleccionada($modalidad)){
 		return 1;
 	}else{
 		return 0;
@@ -330,18 +386,9 @@ sub obtenerColorPuntaje{
 	$puntajeObtenido = $_[1];
 	$color = "ERROR-color-desconocido";
 
-
-	# Using 'keys' in a 'foreach' loop
-	#  * This method has the advantage that it's possible to sort the output by key.
-	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
-	# foreach my $key ( keys %infoEncuestasMaestro ){
-
 	# Using 'each' in a 'while' loop
 	#  * This method's advantage is that it uses very little memory (every time 'each' is called it only returns a pair of (key, value) element).
 	#  * The disadvantage is that you can't order the output by key.
-	# while ( $key = each %infoEncuestasMaestro )
-
-	
 	while ( $key = each %infoEncuestasMaestro ){
 		if($key eq $codigoEncuesta){
 			DEBUG "key: $key -> $infoEncuestasMaestro{$key}{\"verde-inicial\"}\n";
@@ -373,6 +420,38 @@ sub obtenerColorPuntaje{
 	return $color;
 }
 
+# recibe $encuestador, $codigoEncuesta
+sub obtenerGrupoDeOrdenamiento{
+	use Switch;
+	
+	$encuestador = $_[0];
+	$codigoEncuesta = $_[1];
+	
+	$grupoDeOrdenamiento = "";
+	
+	switch($agrupamiento){
+		case ("x-cod"){
+			$grupoDeOrdenamiento = $codigoEncuesta;
+		}
+		
+		case ("x-enc"){
+			$grupoDeOrdenamiento = $encuestador;
+		}
+		
+		case ("*"){
+			$grupoDeOrdenamiento = $encuestador . "." . $codigoEncuesta;
+		}
+		
+		else{
+			MOSTRAR_ERROR("El modo de agrupamiento $agrupamiento es inválido.\n");
+			exit 1;
+		}
+	}
+	
+	DEBUG "grupo encuesta-encuestador?: $grupoDeOrdenamiento";
+	return $grupoDeOrdenamiento;
+}
+
 #necesita $encuestasSeleccionadas{}{}
 #recibe $encuestador, $codigoEncuesta, $puntajeObtenido
 sub agregarEncuesta{
@@ -380,19 +459,13 @@ sub agregarEncuesta{
 	$codigoEncuesta = $_[1];
 	$puntajeObtenido = $_[2];
 	
-	$grupo = $codigoEncuesta;
+	$grupoDeOrdenamiento = obtenerGrupoDeOrdenamiento($encuestador, $codigoEncuesta);
 	
-	if($agruparEncuestasPorEncuestador == 1){
-		$grupo .= ("." . $encuestador);
-	}
-	DEBUG "grupo encuesta-encuestador?: $grupo";
-
-	$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
-	DEBUG "$encuestasSeleccionadas{$grupo}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
+	$encuestasSeleccionadas{$grupoDeOrdenamiento}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} += 1;
+	DEBUG "$encuestasSeleccionadas{$grupoDeOrdenamiento}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
 }
 
 sub obtenerInfoEncuestasMaestras{
-
 	#
 	# Formato del archivo maestro: $grupo/mae/encuestas.mae
 	#
@@ -449,24 +522,6 @@ sub obtenerInfoEncuestasMaestras{
 	return 0;
 }
 
-sub obtenerEncuestadores{
-	#
-	# Encuestadores: $grupo/mae/encuestadores.mae
-	#    Campo                  | Descripción
-	# ----------------------------------------
-	# 1. Userid del encuestador | 8 caracteres
-	# 2. Nombre del encuestador | N caracteres
-	# 3. CUIL                   | 11 numérico 
-	# 4. Valido desde           | fecha
-	# 5. Valido hasta           | fecha 
-	#
-	# Separador de campos: , coma
-	#
-	# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
-	#
-
-}
-
 sub obtenerInfoEncuestasSumarizadas{
 	#
 	# Formato del sumario de Encuestas, archivo $grupo/ya/encuestas.sum
@@ -509,8 +564,15 @@ sub obtenerInfoEncuestasSumarizadas{
 sub generarIdArchivoResultado{
 	
 	# TODO: mejorar la forma en la cual garantizo que el id sea siempre único
-	# este sleep es para garantizar que siempre retorne un id diferente
-	sleep 1;
+	
+	if(open(FILE_HANDLER_TEST, $pathYNombreArchivoResultados.$idArchivo)){
+		close(FILE_HANDLER_TEST);
+
+		# este sleep es para que si lo ejecutan más de una vez por segundo,
+		# espere para que cambie el id del archivo y así "garantizar"
+		# que siempre retorne un id diferente
+		sleep 1;
+	}
 	
 	( $seg, $min, $hs, $dia, $mes, $anio ) = ( localtime ) [ 0, 1, 2, 3, 4, 5 ];
 	return sprintf("%4d%02d%02d-%02d%02d%02d", $anio+1900, $mes+1, $dia, $hs, $min, $seg);
@@ -531,6 +593,9 @@ sub entregarResultados{
 		GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
 	}
 
+	# Using 'keys' in a 'foreach' loop
+	#  * This method has the advantage that it's possible to sort the output by key.
+	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
 	foreach my $key (sort keys %encuestasSeleccionadas){
 		
 		# Esto es para inicializar en cero
