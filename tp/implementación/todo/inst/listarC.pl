@@ -6,32 +6,17 @@
 # $Id$
 #
 
-
-#
-# TODO: ME FALTA HACER ESTO!!!
-#
-# 12.Otra consulta puede estar dada por un nro de encuesta específico.
-#    En este caso lo que se debe mostrar son todos los detalles del registro,
-#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
-#    nombre de la encuesta, cantidad de preguntas y  a continuación del puntaje
-#    obtenido, indicar el color que le corresponde.
-#
-# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
-# Cliente ccc, Modalidad x, sitio y, persona z
-# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
-# Puntaje obtenido: nnn calificación: <color>
-#
-
-
-
-
 #
 # Interacción de este programa con el resto del sistema:
+#
+#  Necesita de las siguientes variables de entorno:
+#   * GRUPO, path raiz del sistema
+#   * DATAMAE, path donde están ubicados los archivos maestros, indexando desde $GRUPO
+#
 #  Necesita de los archivos:
-#   $GRUPO/ya/encuestas.sum
-#   $GRUPO/$DATAMAE/encuestas.mae
-#   $GRUPO/$DATAMAE/preguntas.mae
-#   $GRUPO/$DATAMAE/encuestadores.mae
+#   * $GRUPO/ya/encuestas.sum
+#   * $GRUPO/$DATAMAE/encuestas.mae
+#   * $GRUPO/$DATAMAE/encuestadores.mae
 #
 #  Los informes se graban en el directorio: $GRUPO/ya/
 #
@@ -57,12 +42,17 @@
 # Valores posibles para el parámetro m:           e (electrónica), t (telefónica), c (correo convencional) o p (presencial) y todas sus combinaciones posibles
 # Valores posibles para el parámetro a:           x-cod, x-enc o * (ambos)
 #
-# En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)
-#
 # Las opciones pueden ser:
 #  -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 #  -e (resuelve y emite un informe)
 # O la combinación de ellas.
+#
+
+#
+# Links más consultados:
+#  * http://www.perl.org
+#  * http://www.perlhowto.com
+#  * http://www.epic-ide.org
 #
 
 
@@ -78,8 +68,9 @@ my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
 my $agrupamiento = "*";                 # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "*")
 
 
-# Hash en el que almacenaré los datos obtenidos del archivo maestro de encuestas
+# Hash'es en los que almacenaré los datos obtenidos de los archivos maestros
 my %infoEncuestasMaestro = ();
+my %infoEncuestadoresMaestro = ();
 
 # Hash en el que almacenaré las encuestas seleccionadas por los criterios del "query"
 my %encuestasSeleccionadas = ();
@@ -91,6 +82,7 @@ my $pathArchivosMaestros = $ENV{"GRUPO"}.$ENV{"DATAMAE"}."/";
 my $pathArchivosYa = $ENV{"GRUPO"}."/ya/";
 my $pathArchivosResultados = $ENV{"GRUPO"}."/ya/";
 my $pathYNombreArchivoEncuestasMaestro = $pathArchivosMaestros."encuestas.mae";
+my $pathYNombreArchivoEncuestadoresMaestro = $pathArchivosMaestros."encuestadores.mae";
 my $pathYNombreArchivoEncuestasSumarizadas = $pathArchivosYa."encuestas.sum";
 my $pathYNombreArchivoResultados = $pathArchivosResultados."resultados-";
 
@@ -465,6 +457,43 @@ sub agregarEncuesta{
 	DEBUG "$encuestasSeleccionadas{$grupoDeOrdenamiento}{obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido)} \n";
 }
 
+# escribe $encuestasSeleccionadas{}
+# necesita %infoEncuestadoresMaestro{}{}
+# recibe $encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada
+sub agregarEncuestaEspecifica{
+	#
+	# 12.Otra consulta puede estar dada por un nro de encuesta específico.
+	#    En este caso lo que se debe mostrar son todos los detalles del registro,
+	#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
+	#    nombre de la encuesta, cantidad de preguntas y a continuación del puntaje
+	#    obtenido, indicar el color que le corresponde.
+	#
+	# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
+	# Cliente ccc, Modalidad x, sitio y, persona z
+	# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
+	# Puntaje obtenido: nnn calificación: <color>
+	#
+
+	$encuestador = $_[0];
+	$fechaEncuesta = $_[1];
+	$nroEncuesta = $_[2];
+	$codigoEncuesta = $_[3];
+	$puntajeObtenido = $_[4];
+	$codCliente = $_[5];
+	$sitioRelevamiento = $_[6];
+	$modalidad = $_[7];
+	$personaRelevada = $_[8];
+	
+	$stringReporte = "Encuesta Nro: " . $nroEncuesta . ", realizada por " . $encuestador . "-\"" . $infoEncuestadoresMaestro{$encuestador}{"nombre"} . "\" el dia " . $fechaEncuesta . "\n"
+	               . "Cliente " . $codCliente . ", Modalidad " . $modalidad . ", sitio " . $sitioRelevamiento . ", persona " . $personaRelevada . "\n"
+	               . "Encuesta Aplicada: " . $codigoEncuesta . "-\"" . $infoEncuestasMaestro{$codigoEncuesta}{"nombre"} . "\" compuesta por " . $infoEncuestasMaestro{$codigoEncuesta}{"cantidad-preguntas"} . " preguntas" . "\n"
+	               . "Puntaje obtenido: " . $puntajeObtenido . ", calificación: " . obtenerColorPuntaje($codigoEncuesta, $puntajeObtenido) . "\n";
+	
+	$encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"} = $stringReporte;
+}
+
+# necesita %infoEncuestasMaestro{}{}
+# recibe $pathYNombreArchivo
 sub obtenerInfoEncuestasMaestras{
 	#
 	# Formato del archivo maestro: $grupo/mae/encuestas.mae
@@ -497,7 +526,10 @@ sub obtenerInfoEncuestasMaestras{
 		while (<FILE_HANDLER>) {
 			chomp; # quito el caracter de corte de linea al final de linea
 
-			($codigoEncuesta, $null, $null, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
+			($codigoEncuesta, $nombreEncuesta, $cantidadPreguntas, $verde_inicial, $verde_final, $amarillo_inicial, $amarillo_final, $rojo_inicial, $rojo_final)=split(",");
+			
+			$infoEncuestasMaestro{$codigoEncuesta}{"nombre"}             = $nombreEncuesta;
+			$infoEncuestasMaestro{$codigoEncuesta}{"cantidad-preguntas"} = $cantidadPreguntas;
 			
 			$infoEncuestasMaestro{$codigoEncuesta}{"verde-inicial"}    = $verde_inicial;
 			$infoEncuestasMaestro{$codigoEncuesta}{"verde-final"}      = $verde_final; 
@@ -520,6 +552,66 @@ sub obtenerInfoEncuestasMaestras{
 	}
 
 	return 0;
+}
+
+# necesita %infoEncuestadoresMaestro{}{}
+# recibe $pathYNombreArchivo
+sub obtenerInfoEncuestadoresMaestro{
+	#
+	# Formato del archivo maestro: $grupo/mae/encuestadores.mae
+	#
+	#    Campo                  | Descripción
+	# ----------------------------------------
+	# 1. Userid del encuestador | 8 caracteres
+	# 2. Nombre del encuestador | N caracteres
+	# 3. CUIL                   | 11 numérico 
+	# 4. Valido desde           | fecha
+	# 5. Valido hasta           | fecha 
+	#
+	# Separador de campos: , coma
+	#
+	# Ejemplo: ESTEPANO, Elio Stepano,20216445882,20081212,20110912
+	#
+
+	$pathYNombreArchivo = $_[0];
+	
+	if(open (FILE_HANDLER, $pathYNombreArchivo)){
+		while (<FILE_HANDLER>) {
+			chomp; # quito el caracter de corte de linea al final de linea
+
+			($userIdEncuestador, $nombreEncuestador, $null, $null, $null)=split(",");
+			$infoEncuestadoresMaestro{$userIdEncuestador}{"nombre"} = $nombreEncuestador;
+		}
+		close(FILE_HANDLER);
+	}else{
+		MOSTRAR_ERROR "No existe el achivo ".$pathYNombreArchivo."\n";
+		return 1;
+	}
+
+	return 0;
+}
+
+sub seSolicitoEncuestaEspecifica{
+	#
+	# 12.Otra consulta puede estar dada por un nro de encuesta específico.
+	#    En este caso lo que se debe mostrar son todos los detalles del registro,
+	#    en formato amigable y con las leyendas correspondientes nombre del encuestador,
+	#    nombre de la encuesta, cantidad de preguntas y a continuación del puntaje
+	#    obtenido, indicar el color que le corresponde.
+	#
+	# Encuesta Nro: xxx realizada por <userid> + <nombre> el dia xxx
+	# Cliente ccc, Modalidad x, sitio y, persona z
+	# Encuesta Aplicada: <código y nombre de la encuesta> compuesta por n preguntas
+	# Puntaje obtenido: nnn calificación: <color>
+	#
+
+#	use POSIX;# si tiene posix, se puede utilizar isdigit()
+#	if(@filtroSeleccionNroEncuesta == 1 && isdigit($filtroSeleccionNroEncuesta[0])){
+	if(@filtroSeleccionNroEncuesta == 1 && $filtroSeleccionNroEncuesta[0] =~ /^[+-]?\d+$/){
+		return 1;
+	}else{
+		return 0;
+	}
 }
 
 sub obtenerInfoEncuestasSumarizadas{
@@ -545,12 +637,26 @@ sub obtenerInfoEncuestasSumarizadas{
 	$pathYNombreArchivo = $_[0];
 	
 	if(open (FILE_HANDLER, $pathYNombreArchivo)){
-		while (<FILE_HANDLER>) {
-			chomp; # quito el caracter de corte de linea al final de linea
-			
-			($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
-			if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
-				agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+		if(seSolicitoEncuestaEspecifica()){
+			while (<FILE_HANDLER>) {
+				chomp; # quito el caracter de corte de linea al final de linea
+				
+				($encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada)=split(",");
+	
+				if($nroEncuesta eq $filtroSeleccionNroEncuesta[0]){
+					agregarEncuestaEspecifica($encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada);
+					return 0;
+				}
+			}
+		}else{
+			while (<FILE_HANDLER>) {
+				chomp; # quito el caracter de corte de linea al final de linea
+	
+				($encuestador, $null, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $null, $null, $modalidad, $null)=split(",");
+	
+				if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
+					agregarEncuesta($encuestador, $codigoEncuesta, $puntajeObtenido);
+				}
 			}
 		}
 	}else{
@@ -580,49 +686,83 @@ sub generarIdArchivoResultado{
 
 # necesita $encuestasSeleccionadas{}{}
 sub entregarResultados{
-	$strSeparadorColumnasResultados = "\t\t\t";
-	$stringEncabezadoResultado = "CRITERIO" . $strSeparadorColumnasResultados . "VERDE" . $strSeparadorColumnasResultados . "AMARILLO" . $strSeparadorColumnasResultados . "ROJO" . "\n";
-	
-	if($mostrarResultadosEnPantalla == 1){
-		MOSTRAR_EN_PANTALLA($stringEncabezadoResultado);
-	}
+	if(seSolicitoEncuestaEspecifica()){
+		$stringReporte = "";
 
-	$idArchivo = "";
-	if($guardarResultadosEnArchivo == 1){
-		$idArchivo = generarIdArchivoResultado();
-		GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
-	}
-
-	# Using 'keys' in a 'foreach' loop
-	#  * This method has the advantage that it's possible to sort the output by key.
-	#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
-	foreach my $key (sort keys %encuestasSeleccionadas){
-		
-		# Esto es para inicializar en cero
-		if($encuestasSeleccionadas{$key}{"verde"}){
-			;
+		if(defined $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"}){
+			$stringReporte = $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"};
 		}else{
-			$encuestasSeleccionadas{$key}{"verde"} = 0;
+			$stringReporte = "La encuesta número " . $filtroSeleccionNroEncuesta[0] . " no fue encontrada. Argumentos recibidos: " . "@ARGV" . "\n";
 		}
-		if($encuestasSeleccionadas{$key}{"amarillo"}){
-			;
-		}else{
-			$encuestasSeleccionadas{$key}{"amarillo"} = 0;
-		}
-		if($encuestasSeleccionadas{$key}{"rojo"}){
-			;
-		}else{
-			$encuestasSeleccionadas{$key}{"rojo"} = 0;
-		}
-
-		$stringResultado = $key . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"verde"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"amarillo"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"rojo"} . "\n";
 
 		if($mostrarResultadosEnPantalla == 1){
-			MOSTRAR_EN_PANTALLA($stringResultado);
+			MOSTRAR_EN_PANTALLA($stringReporte);
 		}
-
+	
+		$idArchivo = "";
 		if($guardarResultadosEnArchivo == 1){
-			GUARDAR_EN_ARCHIVO($idArchivo, $stringResultado);
+			$idArchivo = generarIdArchivoResultado();
+			GUARDAR_EN_ARCHIVO($idArchivo, $stringReporte);
+		}
+	}else{
+		if(keys( %encuestasSeleccionadas ) == 0){
+			$stringReporte = "No fue encontrada ninguna encuesta para la selección especificada. Argumentos recibidos: " . "@ARGV" . "\n";
+	
+			if($mostrarResultadosEnPantalla == 1){
+				MOSTRAR_EN_PANTALLA($stringReporte);
+			}
+		
+			$idArchivo = "";
+			if($guardarResultadosEnArchivo == 1){
+				$idArchivo = generarIdArchivoResultado();
+				GUARDAR_EN_ARCHIVO($idArchivo, $stringReporte);
+			}
+		}else{
+			$strSeparadorColumnasResultados = "\t\t\t";
+			$stringEncabezadoResultado = "CRITERIO" . $strSeparadorColumnasResultados . "VERDE" . $strSeparadorColumnasResultados . "AMARILLO" . $strSeparadorColumnasResultados . "ROJO" . "\n";
+			
+			if($mostrarResultadosEnPantalla == 1){
+				MOSTRAR_EN_PANTALLA($stringEncabezadoResultado);
+			}
+		
+			$idArchivo = "";
+			if($guardarResultadosEnArchivo == 1){
+				$idArchivo = generarIdArchivoResultado();
+				GUARDAR_EN_ARCHIVO($idArchivo, $stringEncabezadoResultado);
+			}
+		
+			# Using 'keys' in a 'foreach' loop
+			#  * This method has the advantage that it's possible to sort the output by key.
+			#  * The disadvantage is that it creates a temporary list to hold the keys, in case your hash is very large you end up using lots of memory resources.
+			foreach my $key (sort keys %encuestasSeleccionadas){
+				
+				# Esto es para inicializar en cero
+				if($encuestasSeleccionadas{$key}{"verde"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"verde"} = 0;
+				}
+				if($encuestasSeleccionadas{$key}{"amarillo"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"amarillo"} = 0;
+				}
+				if($encuestasSeleccionadas{$key}{"rojo"}){
+					;
+				}else{
+					$encuestasSeleccionadas{$key}{"rojo"} = 0;
+				}
+		
+				$stringResultado = $key . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"verde"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"amarillo"} . $strSeparadorColumnasResultados . $encuestasSeleccionadas{$key}{"rojo"} . "\n";
+		
+				if($mostrarResultadosEnPantalla == 1){
+					MOSTRAR_EN_PANTALLA($stringResultado);
+				}
+		
+				if($guardarResultadosEnArchivo == 1){
+					GUARDAR_EN_ARCHIVO($idArchivo, $stringResultado);
+				}
+			}
 		}
 	}
 
@@ -633,13 +773,16 @@ if(procesarArgumentos(@ARGV) != 0){
 	exit;
 }
 if(obtenerInfoEncuestasMaestras($pathYNombreArchivoEncuestasMaestro)){
-	exit;
+	exit 1;
+}
+if(obtenerInfoEncuestadoresMaestro($pathYNombreArchivoEncuestadoresMaestro)){
+	exit 1;
 }
 if(obtenerInfoEncuestasSumarizadas($pathYNombreArchivoEncuestasSumarizadas)){
-	exit;
+	exit 1;
 }
 if(entregarResultados()){
-	exit;
+	exit 1;
 }
 
-exit;
+exit 0;
