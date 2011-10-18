@@ -9,6 +9,7 @@ NOMBRE="tp-grupo01"
 
 mkdir $NOMBRE
 mkdir $NOMBRE/inst
+cp todo/inst/* $NOMBRE/inst
 cp todo/lib/* $NOMBRE/inst
 cp todo/ya/* $NOMBRE/inst
 cp todo/mae/* $NOMBRE/inst
