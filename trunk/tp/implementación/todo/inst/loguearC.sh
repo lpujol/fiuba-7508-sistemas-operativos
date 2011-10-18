@@ -87,7 +87,6 @@ function writeLog
 
 	#Tipo de Mensaje
 	#Posibilidad a usar solo eg 'I', o con numero para errores communes
-	#MEldung bei ungültige rFehlernummer? Im moment nur zahlen
 	logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)$/\2/'`
 	if [ ${#logtipo2} -gt 0 ]; then
 		#Existe Archivo de maestro?
@@ -96,11 +95,16 @@ function writeLog
 			logfaltamae="$logtime,$logusuario,E999,LoguearC:Maestro de errores no existe, siguiente Mensaje sin este información"
 			grabarLog "$logfaltamae" "$logfile"
 		else
-			logmsg=`sed -n "s|^\($logtipo2\),\(.*\)|\2: $logmsg|p" "$GRUPO/$DATAMAE/errores.mae"`
+			logtipomaestro=`sed -n "s|^\($logtipo2\),\(.*\)|\2|p" "$GRUPO/$DATAMAE/errores.mae"`
+			if [ ${#logtipomaestro} -gt 0 ]; then
+				echo No encuentro el codigo en el maestro de errores
+				logfaltamae="$logtime,$logusuario,A996,LoguearC:Codigo de error no existe: $logtipo2"
+				grabarLog "$logfaltamae" "$logfile"
+			else
+				logmsg="$logtipomaestro: $logmsg"
+			fi
 		fi
 	fi
-
-	#Parameterreihenfolge?
 
 	#Prepara linea para grabar
 	logentry="$logtime,$logusuario,$logtipo,$logmsg"
