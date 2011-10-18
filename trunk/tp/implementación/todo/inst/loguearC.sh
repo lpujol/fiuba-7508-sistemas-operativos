@@ -183,7 +183,7 @@ logmode="view"
 logviewlinieas=""
 
 #Parse parametros
-while getopts t:p:m:wvn:s: option
+while getopts t:p:m:wvn: option
 do	
 case "$option" in
   	t)	logtipo=$OPTARG;;
@@ -192,7 +192,7 @@ case "$option" in
 	w)	logmode="write";;
 	v)	logmode="view";;
 	n)	logviewlineas=$OPTARG;;
-	[?])	echo "Opciones posibles: t p m w"
+	[?])	echo "Opciones posibles: t p m w/v n"
 	esac
 done
 
