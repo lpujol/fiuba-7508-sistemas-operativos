@@ -14,5 +14,6 @@ cp todo/lib/* $NOMBRE/inst
 cp todo/ya/* $NOMBRE/inst
 cp todo/mae/* $NOMBRE/inst
 mv $NOMBRE/inst/instalarC.sh $NOMBRE
+cp README $NOMBRE # README esta en la misma carpeta que este script
 tar czf $NOMBRE.tgz $NOMBRE
 rm -r $NOMBRE
