@@ -37,15 +37,32 @@
 #  -h, --help
 #  -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas)
 #
-# Valores posibles para los parámetros enc, cod:  1, 2, n, * (todos)
-# Valores posibles para el parámetro n:           nro de encuesta, un rango de ellas, * (todos)
-# Valores posibles para el parámetro m:           e (electrónica), t (telefónica), c (correo convencional) o p (presencial) y todas sus combinaciones posibles
-# Valores posibles para el parámetro a:           x-cod, x-enc o * (ambos)
+# Valores posibles para los parámetros:
+#  * enc, cod:  1, 2, n, * (todos)
+#  * n:         nro de encuesta, un rango de ellas, * (todos)
+#  * m:         e (electrónica), t (telefónica), c (correo convencional) o p (presencial)
+#  * a:         x-cod, x-enc o * (ambos)
 #
 # Las opciones pueden ser:
 #  -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
 #  -e (resuelve y emite un informe)
-# O la combinación de ellas.
+#
+# Invocaciones de ejemplo:
+#  Las siguientes 4 invocaciones darán el mismo reporte:
+#   * perl $GRUPO/inst/listarC.pl -enc estepano
+#   * perl $GRUPO/inst/listarC.pl -enc eStEPanO
+#   * perl $GRUPO/inst/listarC.pl -enc estepan.
+#   * perl $GRUPO/inst/listarC.pl -enc ^estepano$
+#  Para que muestre los resultados sólo por pantalla:
+#   * perl $GRUPO/inst/listarC.pl -c
+#  Para que los resultados los ponga sólo en el archvio de resultados:
+#   * perl $GRUPO/inst/listarC.pl -e
+#  Para que los resultados los muestre por pantalla y los ponga en el archvio de resultados:
+#   * perl $GRUPO/inst/listarC.pl -e -c
+#  Para que busque las encuestas de modalidad electrónica y de correo convencional:
+#   * perl $GRUPO/inst/listarC.pl -m e -m c
+#  Para que busque todo:
+#   * perl $GRUPO/inst/listarC.pl
 #
 
 #
@@ -143,14 +160,9 @@ sub mostrarAyuda{
 	
 	print "\n";
 	
-	print "En el pasaje de parámetros se puede hacer uso de caracteres comodines (ver GLOSARIO)\n";
-	
-	print "\n";
-	
 	print "Las opciones pueden ser:\n";
 	print " -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)\n";
 	print " -e (resuelve y emite un informe)\n";
-	print "O la combinación de ellas.\n";
 	
 	print "\n==== FIN AYUDA ====\n";
 }
