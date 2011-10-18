@@ -1,11 +1,18 @@
 #!/bin/bash            
 #
-# moverC.sh
+# Nombre: moverC
+# Autor: Juan Ignacio Calcagno
+#
 # Funcion para movimiento de archivos
+#
 
 RUTA_INICIAL=`pwd`
 COMANDO="Comando no especificado"
 
+# esDuplicado()
+#
+# Devuelve si un archivo esta duplicado en la variable DUPLICADO_ENCONTRADO
+# 
 function esDuplicado
 {
 	DUPLICADO_ENCONTRADO="NO"
@@ -17,6 +24,10 @@ function esDuplicado
 	done
 }
 
+# generarRutaDestino
+#
+# Genera la ruta destino final del archivo, fijandose si esta duplicado o no.
+#
 function generarRutaDestino 
 {
 	ARCHIVO_DESTINO=$ARCHIVO_ORIGEN
@@ -43,22 +54,34 @@ function generarRutaDestino
 	RUTA_DESTINO="$RUTA_DESTINO/dup"
 }
 
+# chequearExistenciaArchivoOrigen()
+#
+# Se fija si el archivo de origen existe.
+#
 function chequearExistenciaArchivoOrigen
 {
 	if [ ! -f "$RUTA_ORIGEN" ];	then
-     #   ../loguearC/loguearC.sh -w -t E200 -m "RUTA_ORIGEN" -p $COMANDO 
+		$GRUPO/$LIBDIR/loguearC.sh -w -t E200 -m $ARCHIVO_ORIGEN -p "moverC"
         exit -1
 	fi
 }
 
+# chequear existenciaRutaDestino()
+#
+# Se fija si la ruta de destino es valida.
+#
 function chequearExistenciaRutaDestino
 {
 	if [ ! -d "$RUTA_DESTINO" ];	then
-	#	../loguearC/loguearC.sh -w -t E201 -m "RUTA_DESTINO" -p $COMANDO
+		$GRUPO/$LIBDIR/loguearC.sh -w -t E202 -m $RUTA_DESTINO -p "moverC"
         exit -2
 	fi
 }
 
+# mover()
+#
+# Funcion principal del script.
+#
 function mover {
 	ARCHIVO_ORIGEN=`basename $RUTA_ORIGEN`
 	chequearExistenciaArchivoOrigen
@@ -69,9 +92,9 @@ function mover {
 		generarRutaDestino
 	fi
 	cd $RUTA_INICIAL
-	echo "Moviendo el archivo $ARCHIVO_ORIGEN a $RUTA_DESTINO/$ARCHIVO_DESTINO"
+
 	mv "$RUTA_ORIGEN" "$RUTA_DESTINO/$ARCHIVO_DESTINO"
-	#../loguearC/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
+	$GRUPO/$LIBDIR/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
 }
 
 while getopts o:d:c: opcion
@@ -83,6 +106,7 @@ do case "$opcion" in
 	esac
 done
 
+#Llamo a la funcion principal
 mover
 
 exit 0

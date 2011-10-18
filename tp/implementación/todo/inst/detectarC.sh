@@ -1,19 +1,21 @@
 #!/bin/bash
-# detectarC
-
-# Trap para QUIT signal (3) y KILL (1)
-#trap 'exit' 1 # Acá habría que hacer algo más?
-#trap 'exit' 3 # Acá habría que hacer algo más?
-#ps ux | awk '/detectar/ && !/awk/ {print $2}'
+#
+# Nombre: detectarC
+# Autor: Juan Ignacio Calcagno
+#
+# Este script detecta archivos en la carpeta de arribos, valida sus nombres,
+# en base a lo que o los mueve a la carpeta de preparados o los mueve a la
+# carpeta de rechazados.
+# Una vez procesado el directorio de arribos, si en el directorio de aprobados
+# hay archivos invoca el comando sumarC
+#
 
 # Variables
-#PID_FILE=".detectarC.pid"
-MAEENC="$DATAMAE/encuestadores.mae"
-#RUTA_INICIAL=`pwd`
-DIR_APROBADOS="$GRUPO/preparados"
-DIR_RECHAZADOS="$GRUPO/rechazados"
-RUTA_LOGUEARC="$LIBDIR/"
-RUTA_MOVERC="$LIBDIR/"
+MAEENC="$DATAMAE/encuestadores.mae" # Archivo maestro de encuestadores
+DIR_APROBADOS="$GRUPO/preparados" # Directorio de archivos aprobados
+DIR_RECHAZADOS="$GRUPO/rechazados" # Directorio de archivos rechazados
+RUTA_LOGUEARC="$LIBDIR/" # Ruta de la funcion loguearC
+RUTA_MOVERC="$LIBDIR/" # Ruta de la funcion moverC
 
 # validarFecha(fecha, fechaDesde, fechaHasta)
 #
@@ -39,6 +41,11 @@ function validarFecha {
     fi
 }
 
+# chequearProcesoSumarC()
+#
+# Chequea si el script sumarC esta corriendo o no. Devuelve el pid del
+# proceso en ese caso, o 0 si no.
+#
 function chequearProcesoSumarC {
     PID_SUMARC=`ps | grep "sumarC.sh" | head -1 | awk '{print $1 }'`	
 	if [ "$PID_SUMARC" != "" ]; then
@@ -47,13 +54,12 @@ function chequearProcesoSumarC {
 	return 0
 }
 
-#echo $$ > $PID_FILE # Guardo el pid en un archivo
 cd $GRUPO/$ARRIDIR
 
-
-# Tiene que correr indefinidamente
-COUNTER=1
-REGEXP_FORMATO_VALIDO='^\./(19|20)[0-9][0-9](0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[01])\.\w{8}$'
+COUNTER=1 # Este es el contador de veces que se debe ejecutar el loop
+	  # principal. Como debe correr indefinidamente, no va a ser
+	  # incrementado.
+REGEXP_FORMATO_VALIDO='^\./(19|20)[0-9][0-9](0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[01])\.\w{8}$' 
 MENSAJE_ACEPTADO="Archivo de encuestas aceptado:"
 MENSAJE_USUARIO_INVALIDO="Archivo de encuestas rechazado porque el user_id no existe:"
 MENSAJE_FECHA_INVALIDA="Archivo de encuestas rechazado porque la fecha no es válida:"
@@ -81,19 +87,19 @@ while [ $COUNTER -eq 1 ]; do
 			done
 			if [ $ENCONTRADO -eq 1 ]; then
 			    if [ $FECHA_VALIDA -eq 1 ]; then
-			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_APROBADOS -c "$0"
-				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_ACEPTADO $file" -p "$0"
+			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_APROBADOS -c "detectarC"
+				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_ACEPTADO $file" -p "detectarC"
 			    else
-			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FECHA_INVALIDA $file" -p "$0"
+			        $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "detectarC"
+				    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FECHA_INVALIDA $file" -p "detectarC"
 			    fi
 			else
-			    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-			    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_USUARIO_INVALIDO $file" -p "$0"
+			    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "detectarC"
+			    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_USUARIO_INVALIDO $file" -p "detectarC"
 			fi
 		else
-		    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "$0"
-		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "$0"
+		    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "detectarC"
+		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "detectarC"
 		fi
 	done
 	if [ "$(ls -A $DIR_APROBADOS)" ]; then
