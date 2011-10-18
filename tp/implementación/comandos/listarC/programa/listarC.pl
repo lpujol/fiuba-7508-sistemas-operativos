@@ -643,7 +643,7 @@ sub obtenerInfoEncuestasSumarizadas{
 				
 				($encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada)=split(",");
 	
-				if(esEncuestaSeleccionada($encuestador, $nroEncuesta, $codigoEncuesta, $modalidad)){
+				if($nroEncuesta eq $filtroSeleccionNroEncuesta[0]){
 					agregarEncuestaEspecifica($encuestador, $fechaEncuesta, $nroEncuesta, $codigoEncuesta, $puntajeObtenido, $codCliente, $sitioRelevamiento, $modalidad, $personaRelevada);
 					return 0;
 				}
@@ -687,7 +687,13 @@ sub generarIdArchivoResultado{
 # necesita $encuestasSeleccionadas{}{}
 sub entregarResultados{
 	if(seSolicitoEncuestaEspecifica()){
-		$stringReporte = $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"};
+		$stringReporte = "";
+
+		if(defined $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"}){
+			$stringReporte = $encuestasSeleccionadas{"encuesta-específica"}{"string-reporte"};
+		}else{
+			$stringReporte = "La encuesta número " . $filtroSeleccionNroEncuesta[0] . " no fue encontrada.";
+		}
 
 		if($mostrarResultadosEnPantalla == 1){
 			MOSTRAR_EN_PANTALLA($stringReporte);
