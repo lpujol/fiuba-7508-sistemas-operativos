@@ -65,6 +65,13 @@
 # O la combinación de ellas.
 #
 
+#
+# Links más consultados:
+#  * http://www.perl.org
+#  * http://www.perlhowto.com
+#  * http://www.epic-ide.org
+#
+
 
 #
 # Variables seteadas a partir de los argumentos recibidos por el programa
