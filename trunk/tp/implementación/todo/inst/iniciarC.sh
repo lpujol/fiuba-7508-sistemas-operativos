@@ -172,13 +172,13 @@ checkearInstalacion
 		do
 			echo "- ${arr[$index]}"
 		done
-		exit 1
+		return 1
 	fi
 otorgarPermisoEjecucion
 checkearDetectarC
 	if [ $? -ne 0 ]; then
 		echo "DetectarC ya se encuentra ejecutando bajo el Numero:$PIDDETECTARC?"
-		exit 1
+		return 1
 	fi
 iniciarDetectarC
 	if [ $? -ne 0 ]; then
@@ -196,7 +196,7 @@ iniciarDetectarC
 		echo "-LOGDIR=$LOGDIR"
 		echo "-LOGEXT=$LOGEXT"
 		echo "Demonio corriendo bajo el Nro:$PIDDETECTARC"
-#		exit 0
+		return 0
 	else
 		echo "Inicialización de Ambiente No fue exitosa."
 		echo "Error: No se pudo iniciar el Demonio"

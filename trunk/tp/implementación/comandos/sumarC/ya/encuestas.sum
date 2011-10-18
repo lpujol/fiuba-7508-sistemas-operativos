@@ -1,0 +1,3 @@
+ser,20111009,1022,E03,12,30354444882,E,P,II
+${ARCHIVO[1]},${ARCHIVO[0]},$actual_encuesta,${cabecera[1]},$calculado,${cabecera[2]},${cabecera[3]},${cabecera[4],${cabecera[5]}
+ser,20111015,1022,E03,12,30354444882,E,P,II
