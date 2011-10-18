@@ -69,8 +69,8 @@ function writeLog
 	logfile=$GRUPO/$LOGDIR/$logprog$LOGEXT 
 	if [ \! -w $logfile ]; then
 		#Existe el directorio?
-		if [ \! -d $LOGDIR ]; then
-			mkdir $LOGDIR
+		if [ \! -d $GRUPO/$LOGDIR ]; then
+			mkdir $GRUPO/$LOGDIR
 		fi
 		#Grabar mensaje en log
 		lognewentry="$logtime,$logusuario,A998,LoguearC:Log no existe, crear nuevo archivo de log: $logfile"
