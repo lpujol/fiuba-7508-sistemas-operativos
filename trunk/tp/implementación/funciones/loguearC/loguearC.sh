@@ -69,8 +69,8 @@ function writeLog
 	logfile=$GRUPO/$LOGDIR/$logprog$LOGEXT 
 	if [ \! -w $logfile ]; then
 		#Existe el directorio?
-		if [ \! -d $LOGDIR ]; then
-			mkdir $LOGDIR
+		if [ \! -d $GRUPO/$LOGDIR ]; then
+			mkdir $GRUPO/$LOGDIR
 		fi
 		#Grabar mensaje en log
 		lognewentry="$logtime,$logusuario,A998,LoguearC:Log no existe, crear nuevo archivo de log: $logfile"
@@ -87,37 +87,41 @@ function writeLog
 
 	#Tipo de Mensaje
 	#Posibilidad a usar solo eg 'I', o con numero para errores communes
-	#MEldung bei ungültige rFehlernummer? Im moment nur zahlen
 	logtipo2=`echo $logtipo | sed  's/^\(E\|A\|I\|SE\)\([0-9]*\)$/\2/'`
 	if [ ${#logtipo2} -gt 0 ]; then
 		#Existe Archivo de maestro?
-		if [ \! -f "$DATAMAE/errores.mae" ]; then
+		if [ \! -f "$GRUPO/$DATAMAE/errores.mae" ]; then
 			echo No encuentro el maestro de errores
 			logfaltamae="$logtime,$logusuario,E999,LoguearC:Maestro de errores no existe, siguiente Mensaje sin este información"
 			grabarLog "$logfaltamae" "$logfile"
 		else
-			logmsg=`sed -n "s|^\($logtipo2\),\(.*\)|\2: $logmsg|p" "$DATAMAE/errores.mae"`
+			logtipomaestro=`sed -n "s|^\($logtipo2\),\(.*\)|\2|p" "$GRUPO/$DATAMAE/errores.mae"`
+			if [ ${#logtipomaestro} -eq 0 ]; then
+				echo No encuentro el codigo en el maestro de errores
+				logfaltamae="$logtime,$logusuario,A996,LoguearC:Codigo de error no existe: $logtipo2"
+				grabarLog "$logfaltamae" "$logfile"
+			else
+				logmsg="$logtipomaestro: $logmsg"
+			fi
 		fi
 	fi
-
-	#Parameterreihenfolge?
 
 	#Prepara linea para grabar
 	logentry="$logtime,$logusuario,$logtipo,$logmsg"
 
 	#Examinar tamano de archivo de log
 	logsize=`stat -c "%s" $logfile`
-	if [ $logsize -gt `expr $MAXLOGSIZE \* 1024 - ${#logentry}` ]; then
+	if [ $logsize -gt `expr $LOGSIZE \* 1024 - ${#logentry}` ]; then
 		#Si esta demasiado grande, borrar 50 porcientos de las lineas
 		#Calcular numero de lineas 
 		loglines=`grep -c '' $logfile`
 		sed -i "1,`expr $loglines \/ 2` d" $logfile
 
-		logfullentry="$logtime,$logusuario,A500,Log excedido, se corta: había más de $MAXLOGSIZE kb,"
+		logfullentry="$logtime,$logusuario,A500,Log excedido, se corta: había más de $LOGSIZE kb,"
 		grabarLog "$logfullentry" "$logfile"
 
 		#Mensaje a stdout
-		echo "Log excedido, había más de $MAXLOGSIZE kb, se corta"
+		echo "Log excedido, había más de $LOGSIZE kb, se corta"
 	fi
 
 	#Escribir
@@ -149,12 +153,6 @@ function viewLog
 	fi
 } #fin de viewLog
 
- 
-#Umgebungsvariablen, später löschen
-#GRUPO='/home/havoc/tpMy'
-
-#DATAMAE="$GRUPO/mae"
-
 #Ambiente iniciado?
 if [ -z $GRUPO ] 
   then
@@ -163,14 +161,14 @@ if [ -z $GRUPO ]
 fi
 
 #Poner variables, si no existen
-if [ -z $MAXLOGSIZE ]
+if [ -z $LOGSIZE ]
   then
-  MAXLOGSIZE=100
+  LOGSIZE=100
 fi
 
 if [ -z $LOGDIR ]
   then
-  LOGDIR=$GRUPO/log
+  LOGDIR=log
 fi
 
 if [ -z $LOGEXT ]
@@ -189,7 +187,7 @@ logmode="view"
 logviewlinieas=""
 
 #Parse parametros
-while getopts t:p:m:wvn:s: option
+while getopts t:p:m:wvn: option
 do	
 case "$option" in
   	t)	logtipo=$OPTARG;;
@@ -198,7 +196,7 @@ case "$option" in
 	w)	logmode="write";;
 	v)	logmode="view";;
 	n)	logviewlineas=$OPTARG;;
-	[?])	echo "Opciones posibles: t p m w"
+	[?])	echo "Opciones posibles: t p m w/v n"
 	esac
 done
 
