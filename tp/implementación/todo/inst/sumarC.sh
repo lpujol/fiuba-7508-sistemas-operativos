@@ -239,7 +239,9 @@ touch $PATH_SUMA
 
 # procesar archivos de $grupo/preparados, solo se entra acá si hay archivos disponibles.
 for file in `ls $PATH_PREPARADOS`; do
-
+    if [ -d "$PATH_PREPARADOS/$file" ]; then
+        continue
+    fi
     $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "Archivo a Procesar: $file" -p $PROCESO
 
     # chequeo por duplicados.
