@@ -17,6 +17,12 @@ DIR_RECHAZADOS="$GRUPO/rechazados" # Directorio de archivos rechazados
 RUTA_LOGUEARC="$LIBDIR/" # Ruta de la funcion loguearC
 RUTA_MOVERC="$LIBDIR/" # Ruta de la funcion moverC
 
+# Ambiente iniciado?
+if [ -z $GRUPO ]; then
+    echo "Falta Ambiente"
+    exit 3
+fi
+
 # validarFecha(fecha, fechaDesde, fechaHasta)
 #
 # Valida que fecha no este en el futuro, y que se encuentre entre fechaDesde y
@@ -118,5 +124,5 @@ while [ $COUNTER -eq 1 ]; do
 		cd $GRUPO/$ARRIDIR
 	    fi
 	fi
-	sleep 30
+	sleep 5
 done
