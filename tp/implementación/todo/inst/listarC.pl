@@ -80,8 +80,8 @@ my @filtroSeleccionEncuestadores = ();  # -enc, --encuestador
 my @filtroSeleccionCodigoEncuesta = (); # -cod, --código-de-encuesta
 my @filtroSeleccionNroEncuesta = ();    # -n, --nro-de-encuesta
 my @filtroSeleccionModalidad = ();      # -m, --modalidad
-my $mostrarResultadosEnPantalla = 1;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
-my $guardarResultadosEnArchivo = 1;     # -e (resuelve y emite un informe)
+my $mostrarResultadosEnPantalla = 0;    # -c (resuelve la consulta y muestra resultados por pantalla, no graba en archivo)
+my $guardarResultadosEnArchivo = 0;     # -e (resuelve y emite un informe)
 my $agrupamiento = "*";                 # -a, --agrupamiento (Con esta variable se controla el agrupamiento que se hará de las encuestas seleccionadas. Debe tomar alguno de estos tres valores: "x-cod", "x-enc" o "*")
 
 
