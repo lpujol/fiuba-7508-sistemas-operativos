@@ -161,14 +161,14 @@ if [ -z $GRUPO ]
 fi
 
 #Poner variables, si no existen
-if [ -z $MAXLOGSIZE ]
+if [ -z $LOGSIZE ]
   then
-  MAXLOGSIZE=100
+  LOGSIZE=100
 fi
 
 if [ -z $LOGDIR ]
   then
-  LOGDIR=$GRUPO/log
+  LOGDIR=log
 fi
 
 if [ -z $LOGEXT ]
