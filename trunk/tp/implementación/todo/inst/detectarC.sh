@@ -23,7 +23,7 @@ if [ -z $GRUPO ]; then
     exit 3
 fi
 
-# validarFecha(fecha, fechaDesde, fechaHasta)
+# validarRangoFecha(fecha, fechaDesde, fechaHasta)
 #
 # Valida que fecha no este en el futuro, y que se encuentre entre fechaDesde y
 # fechaHasta. El formato de las fechas es yyyymmdd (ej. 20110823).
@@ -33,7 +33,7 @@ fi
 # @fechaDesde: menor valor posible para @fecha
 # @fechaHasta: mayor valor posible para @fecha
 #
-function validarFecha {
+function validarRangoFecha {
     # $1: @fecha
     # $2: @fechaDesde
     # $3: @fechaHasta
@@ -45,6 +45,59 @@ function validarFecha {
             fi
         fi
     fi
+}
+
+# validarFecha(fecha)
+#
+# Toma un string que PARECE una fech en formato yyyymmdd, y valida que los
+# últimos días de los meses sean correctos. (ej. descartar 31 de Noviembre, 30
+# de Febrero, etc)
+#
+function validarFecha {
+    # $1: @fecha
+    YYYY=`echo $1 | cut -b 1-4`
+    MM=`echo $1 | cut -b 5-6`
+    DD=`echo $1 | cut -b 7-8`
+    case "$MM" in
+        "01" | "03" | "05" | "07" | "08" | "10" | "12" )
+        # Estamos validando un mes de 31 dias
+        if [ $DD -gt 31 ]; then
+            return 0
+        fi
+        ;;
+        "04" | "06" | "09" | "11" )
+        # Estamos validando un mes de 30 dias
+        if [ $DD -gt 30 ]; then
+            return 0
+        fi
+        ;;
+        "02" )
+        # Estamos validando febrero, que puede tener 28 o 29 dias
+        if [ $[$YYYY % 400] -eq "0" ]; then
+            # Si el año es divisible por 400, entonces es bisiesto.
+            if [ $DD -gt 29 ]; then
+                return 0
+            fi
+        elif [ $[$YYYY % 4] -eq 0 ]; then
+            if [ $[$YYYY % 100] -ne 0 ]; then
+                # Si el año es divisible por 4, pero no por 100, es bisiesto.
+                if [ $DD -gt 29 ]; then
+                    return 0
+                fi
+            else
+                if [ $DD -gt 28 ]; then
+                    return 0
+                fi
+            fi
+        else
+            # No es un año bisiesto
+            if [ $DD -gt 28 ]; then
+                return 0
+            fi
+        fi
+        ;;
+    esac
+    return 1
 }
 
 # chequearProcesoSumarC()
@@ -88,7 +141,10 @@ while [ $COUNTER -eq 1 ]; do
 				    FECHA=`echo $file | cut -b 1-8`
 				    FECHA_DESDE=`echo $linea | cut -d , -f 4`
 				    FECHA_HASTA=`echo $linea | cut -d , -f 5`
-					validarFecha $FECHA $FECHA_DESDE $FECHA_HASTA
+				    validarFecha $FECHA
+				    if [ $? -eq 1 ]; then
+    					validarRangoFecha $FECHA $FECHA_DESDE $FECHA_HASTA
+    			    fi
 				fi
 			done
 			if [ $ENCONTRADO -eq 1 ]; then
