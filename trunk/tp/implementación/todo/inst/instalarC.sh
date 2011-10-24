@@ -76,9 +76,13 @@ function crearDirectorio() {
 
 function terminosCondiciones() {
     echo "*****************************************************************"
-    echoAndLog "I" "*           Sistema Consultar Copyright SisOp (c)2011           *\n"
+    echo "*          Sistema Consultar Copyright SisOp (c)2011           *"
+    loguear "I" "Sistema Consultar Copyright SisOp (c)2011"
     echo "*****************************************************************"
-    echoAndLog "I" "* Al instalar Consultar UD. expresa estar en un todo de acuerdo *\n* con los términos y condiciones del \"ACUERDO DE LICENCIA DE    *\n* SOFTWARE\" incluido en este paquete.                           *\n"
+    loguear "I" "Al instalar Consultar UD. expresa estar en un todo de acuerdo con los términos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\" incluido en este paquete."
+    echo "* Al instalar Consultar UD. expresa estar en un todo de acuerdo *"
+    echo "* con los términos y condiciones del \"ACUERDO DE LICENCIA DE    *"
+    echo "* SOFTWARE\" incluido en este paquete.                           *"
     echo "*****************************************************************"
     echoAndLog "I" "Acepta? (s/n): "
 
@@ -87,7 +91,7 @@ function terminosCondiciones() {
     loguear "I" "$respuesta"
         
     if [ "$respuesta" = "" ] || [ `toLower $respuesta` != "s" ]; then
-        echoAndLog "I" "Instalacion Cancelada\n"
+        echoAndLog "I" "Instalacion Cancelada"
         exit 1
     fi
 }
@@ -99,11 +103,11 @@ function terminosCondiciones() {
 function verificarPerl() {
     perlVersion=`perl --version | grep -o "v[5-9]\.[0-9]\{1,\}\.[0-9]\{1,\}"`
     if [ $? -ne 0 ]; then
-        echoAndLog "SE" "Para instalar Consultar es necesario contar con  Perl 5 o superior instalado.\n"
-        echoAndLog "SE" "Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado."
+        echoAndLog "SE" "Para instalar Consultar es necesario contar con  Perl 5 o superior instalado. Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado."
         exit 1
     else
-        echoAndLog "I" "Version de Perl instalada: $perlVersion\n"
+        echoAndLog "I" "Version de Perl instalada: $perlVersion"
+	echo ""
     fi
 }
 
@@ -111,9 +115,11 @@ function mensajesInformativos() {
     echoAndLog "I" "Todos los directorios del sistema serán subdirectorios de $GRUPO"
     echoAndLog "I" "Todos los componentes de la instalación se obtendrán del repositorio: $GRUPO/$INSTDIR"
     listado=`ls $GRUPO/$INSTDIR`
-    echoAndLog "I" "Contenido del repositorio: \n$listado\n"
+    echoAndLog "I" "Contenido del repositorio: $listado"
     echoAndLog "I" "El log de la instalación se almacenara en $GRUPO/$INSTDIR"
+    echo ""
     echoAndLog "I" "Al finalizar la instalación, si la misma fue exitosa se dejara un archivo de configuración en $GRUPO/$CONFDIR"
+    echo ""
 }
 
 function definirDirBinarios() {
@@ -127,7 +133,8 @@ function definirDirBinarios() {
                 BINDIR=$dirBin
                 isOk=1
             else
-                echoAndLog "E" "$dirBin no es un nombre de directorio valido.\n"
+                echoAndLog "E" "$dirBin no es un nombre de directorio valido."
+		echo ""
             fi
         else
             isOk=1
@@ -147,7 +154,8 @@ function definirDirArribos() {
                 ARRIDIR=$dirArribos
                 isOk=1
             else
-                echoAndLog "E" "$dirArribos no es un nombre de directorio valido.\n"
+                echoAndLog "E" "$dirArribos no es un nombre de directorio valido."
+		echo ""
             fi
         else
             isOk=1
@@ -168,7 +176,8 @@ function definirDirArribos() {
                     DATASIZE=$dataSize
                     isOk=1
                 else
-                    echoAndLog "E" "$dataSize no es un valor válido. Ingrese un valor numérico\n"
+                    echoAndLog "E" "$dataSize no es un valor válido. Ingrese un valor numérico"
+		    echo ""
                 fi
             else
                 isOk=1
@@ -179,7 +188,8 @@ function definirDirArribos() {
         freeSize=`df $GRUPO | tail -n 1 | sed 's/\s\+/ /g' | cut -d ' ' -f 4`
         let freeSize=$freeSize/1024
         if [ $freeSize -lt $DATASIZE ]; then
-            echoAndLog "E" "Insuficiente espacio en disco. Espacio disponible: $freeSize MB. Espacio requerido $DATASIZE MB\n"
+            echoAndLog "E" "Insuficiente espacio en disco. Espacio disponible: $freeSize MB. Espacio requerido $DATASIZE MB"
+	    echo ""
         fi
     done
     loguear "I" "Espacio para datos externos: $DATASIZE"
@@ -196,7 +206,8 @@ function definirDirLog() {
                 LOGDIR=$dirLog
                 isOk=1
             else
-                echoAndLog "E" "$dirLog no es un nombre de directorio valido.\n"
+                echoAndLog "E" "$dirLog no es un nombre de directorio valido."
+		echo ""
             fi
         else
             isOk=1
@@ -216,7 +227,8 @@ function definirDirLog() {
             LOGEXT=$logExt
             isOk=1
         else
-            echoAndLog "E" "$logExt no es un nombre de extensión valido.\n"
+            echoAndLog "E" "$logExt no es un nombre de extensión valido."
+	    echo ""
         fi
     else
         isOk=1
@@ -236,7 +248,8 @@ function definirDirLog() {
             LOGSIZE=$logSize
             isOk=1
         else
-            echoAndLog "E" "$logSize no es un valor válido. Ingrese un valor numérico\n"
+            echoAndLog "E" "$logSize no es un valor válido. Ingrese un valor numérico"
+	    echo ""
         fi
     else
         isOk=1
@@ -246,9 +259,10 @@ function definirDirLog() {
 }
 
 function mostrarParametros() {
-    echoAndLog "I" "********************************************************"
-    echoAndLog "I" "* Parámetros de Instalación del paquete  Consultar     *"
-    echoAndLog "I" "********************************************************"
+    echo "********************************************************"
+    echo -n "* "
+    echoAndLog "I" "Parámetros de Instalación del paquete  Consultar"
+    echo "********************************************************"
     echoAndLog "I" "Directorio de trabajo: $GRUPO"
     echoAndLog "I" "Directorio de instalación: $INSTDIR"
     echoAndLog "I" "Directorio de configuración: $CONFDIR"
@@ -260,12 +274,13 @@ function mostrarParametros() {
     echoAndLog "I" "Directorio para los archivos de Log: $LOGDIR"
     echoAndLog "I" "Extensión para los archivos de Log: $LOGEXT"
     echoAndLog "I" "Tamaño máximo para cada archivo de Log: $LOGSIZE Kb"
-    echoAndLog "I" "Log de la instalación: $INSTDIR\n"
+    echoAndLog "I" "Log de la instalación: $INSTDIR"
+    echo ""
 }
 
 function confirmarParametros() {
-    echoAndLog "I" "Si los datos ingresados son correctos de ENTER para continuar, si\n"
-    echoAndLog "I" "desea modificar algún parámetro oprima cualquier tecla para reiniciar\n"
+    echoAndLog "I" "Si los datos ingresados son correctos de ENTER para continuar, si desea modificar algún parámetro oprima cualquier tecla para reiniciar"
+    echo ""
     read -s -n1 respuesta
 
     if [ "$respuesta" = "" ]; then
@@ -279,13 +294,14 @@ function confirmarInstalacion() {
     echoAndLog "I" "Iniciando Instalación… Está UD. seguro? (Si/No):"
     read respuesta
     if [ "$respuesta" = "" ] || [ `toLower $respuesta` != "si" ]; then
-        echoAndLog "I" "Instalacion Cancelada\n"
+        echoAndLog "I" "Instalacion Cancelada"
         exit 1
     fi
 }
 
 function crearDirectorios() {
     echo "Creando estructuras de directorio..." 
+    echo ""
     crearDirectorio 755 "$GRUPO/$CONFDIR"
     crearDirectorio 755 "$GRUPO/$MAEDIR"
     crearDirectorio 755 "$GRUPO/$BINDIR"
@@ -305,6 +321,10 @@ function crearDirectorios() {
 #    2 - Path destino del archivo
 #    3 - Permisos del archivo
 function moverArchivo() {
+    if [ -f "$2/${1##*/}" ]; then
+	return 2
+    fi
+
     if [ ! -f $1 ]; then 
         loguear "E" "200:Archivo inexistente: ${1##*/}" 
         return 1
@@ -324,7 +344,7 @@ function moverArchivo() {
 
 function moverArchivos() {
     echo "Moviendo archivos..."
-
+    echo ""
     moverArchivo "$GRUPO/$INSTDIR/encuestas.mae" "$GRUPO/$MAEDIR" "444"
     moverArchivo "$GRUPO/$INSTDIR/preguntas.mae" "$GRUPO/$MAEDIR" "444"
     moverArchivo "$GRUPO/$INSTDIR/encuestadores.mae" "$GRUPO/$MAEDIR" "444"
@@ -459,24 +479,31 @@ function detectarInstalacion {
 function mostrarComponentesInstalados() {
     detectarInstalacion
 
-    echo "********************************************************"
-    echoAndLog "I" "*   Sistema Consultar Copyright SisOp (c)2011          *\n"
+    echo "********************************************************" 
+    echo "*   Sistema Consultar Copyright SisOp (c)2011          *"
+    loguear "I" "Sistema Consultar Copyright SisOp (c)2011"
     echo "********************************************************"
     
     if [ $cantInst -gt 0 ]; then
-        echoAndLog "I" "* Se encuentran instalados los siguientes componentes:\n"
+	echo -n "* "
+        echoAndLog "I" "Se encuentran instalados los siguientes componentes:"
+	echo ""
         arr=("${instalados[@]}")
         for index in ${!arr[*]}
         do
-            echoAndLog "I" "  ${arr[$index]}"
+	    echo -n "  "
+            echoAndLog "I" "${arr[$index]}"
         done
     fi
 
     if [ $cantNoInst -gt 0 ]; then 
-        echoAndLog "I" "\n* Falta instalar los siguientes componentes:\n"    
+	echo -e -n "\n* " 
+        echoAndLog "I" "Falta instalar los siguientes componentes:"    
+	echo ""
         for item in ${noinstalados[*]}
         do
-            echoAndLog "I" "  $item"
+	    echo -n "  "
+            echoAndLog "I" "$item"
         done
         echo ""
     fi
@@ -494,7 +521,8 @@ detectarInstalacion
 case "$?" in 
     0 )     #Instalacion completa
         mostrarComponentesInstalados
-        echoAndLog "I" "* Proceso de Instalacion Cancelado\n"
+	echo -n "* "
+        echoAndLog "I" "Proceso de Instalacion Cancelado"
         exit 0;;
 
     1 )     #No hay instalacion previa
@@ -523,6 +551,7 @@ moverArchivos
 guardarConfiguracion
 mostrarComponentesInstalados
 echo "********************************************************" 
-echoAndLog "I" "* Fin del proceso de instalacion Copyright SisOp (c)2011"
+echo -n "* "
+echoAndLog "I" "Fin del proceso de instalacion Copyright SisOp (c)2011"
 echo "********************************************************" 
 exit $?
