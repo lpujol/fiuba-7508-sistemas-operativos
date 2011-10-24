@@ -147,7 +147,7 @@ function checkearDetectarC(){
 }
 
 function iniciarDetectarC(){
-	../lib/StartD.sh ../bin/detectarC.sh
+	$GRUPO/$LIBDIR/StartD.sh
 	PIDDETECTARC=`ps | grep "detectarC.sh" | head -1 | awk '{print $1 }'`	
 	if [ "$PIDDETECTARC" != "" ]; then
 		return $PIDDETECTARC
