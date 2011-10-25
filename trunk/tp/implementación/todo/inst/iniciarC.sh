@@ -204,7 +204,6 @@ iniciarDetectarC
 		echo "-LOGDIR=$LOGDIR"
 		echo "-LOGEXT=$LOGEXT"
 		echo "Demonio corriendo bajo el Nro:$PIDDETECTARC"
-		return 0
 	else
 		echo "Inicialización de Ambiente No fue exitosa."
 		echo "Error: No se pudo iniciar el Demonio"
