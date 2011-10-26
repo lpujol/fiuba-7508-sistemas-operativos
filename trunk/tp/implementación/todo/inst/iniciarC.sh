@@ -100,7 +100,7 @@ function cargarVariables() {
     else 
 		return 1 		
 	fi	
-	PATH=$PATH:$GRUPO:$GRUPO/$BINDIR"/"
+	PATH=$PATH:$GRUPO:$GRUPO/$BINDIR"/":$GRUPO/$LIBDIR"/"
 	export PATH
 	return 0
 }
@@ -140,7 +140,7 @@ function otorgarPermisoEjecucion(){
 
 function checkearDetectarC(){
 	PIDDETECTARC=`ps | grep "detectarC.sh" | head -1 | awk '{print $1 }'`	
-	if [ ! "$PIDDETECTARC"="" ]; then
+	if [ "$PIDDETECTARC" != "" ]; then
 		return $PIDDETECTARC
 	fi
 	return 0
@@ -204,6 +204,7 @@ iniciarDetectarC
 		echo "-LOGDIR=$LOGDIR"
 		echo "-LOGEXT=$LOGEXT"
 		echo "Demonio corriendo bajo el Nro:$PIDDETECTARC"
+		return 0
 	else
 		echo "Inicialización de Ambiente No fue exitosa."
 		echo "Error: No se pudo iniciar el Demonio"

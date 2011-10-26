@@ -17,7 +17,7 @@ function esDuplicado
 {
     DUPLICADO_ENCONTRADO="NO"
     cd $RUTA_DESTINO
-    for ARCHIVO in `find . -type f -maxdepth 1 -print 2>/dev/null`;    do
+    for ARCHIVO in `find . -maxdepth 1 -print 2>/dev/null`;    do
         if [ $ARCHIVO = "./"$ARCHIVO_ORIGEN ]; then
                 DUPLICADO_ENCONTRADO="SI"
         fi
@@ -60,7 +60,7 @@ function generarRutaDestino
 #
 function chequearExistenciaArchivoOrigen
 {
-    if [ ! -f "$RUTA_ORIGEN" ];    then
+    if [ ! -f "$RUTA_ORIGEN" -a ! -d "$RUTA_ORIGEN" ];    then
         $GRUPO/$LIBDIR/loguearC.sh -w -t E200 -m $ARCHIVO_ORIGEN -p "moverC"
         exit -1
     fi
@@ -92,7 +92,6 @@ function mover {
         generarRutaDestino
     fi
     cd $RUTA_INICIAL
-
     mv "$RUTA_ORIGEN" "$RUTA_DESTINO/$ARCHIVO_DESTINO"
     $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "Archivo $ARCHIVO_ORIGEN movido a $RUTA_DESTINO/$ARCHIVO_DESTINO" -p $COMANDO
 }

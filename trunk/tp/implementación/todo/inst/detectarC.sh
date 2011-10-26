@@ -123,11 +123,17 @@ MENSAJE_ACEPTADO="Archivo de encuestas aceptado:"
 MENSAJE_USUARIO_INVALIDO="Archivo de encuestas rechazado porque el user_id no existe:"
 MENSAJE_FECHA_INVALIDA="Archivo de encuestas rechazado porque la fecha no es válida:"
 MENSAJE_FORMATO_INVALIDO="Archivo de encuestas rechazado porque el nombre no es del formato <fecha>.<user_id>:"
+MENSAJE_ARCHIVO_INVALIDO="Archivo de encuestas rechazado porque es un directorio:"
 
 while [ $COUNTER -eq 1 ]; do
 	# Por cada archivo del directorio de arribos
+	SAVEIFS=$IFS
+	IFS=$(echo -en "\n\b")
 	for file in `ls -1tr .`; do
-		if echo $file | grep -Eq "$REGEXP_FORMATO_VALIDO" 
+		if [ -d "$file" ]; then
+			$GRUPO/$LIBDIR/moverC.sh -o "$file" -d $DIR_RECHAZADOS -c "detectarC"
+			$GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_ARCHIVO_INVALIDO $file" -p "detectarC"
+		elif echo "$file" | grep -Eq "$REGEXP_FORMATO_VALIDO" 
 		then
 		    FECHA_VALIDA=0
 		    ENCONTRADO=0
@@ -160,10 +166,11 @@ while [ $COUNTER -eq 1 ]; do
 			    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_USUARIO_INVALIDO $file" -p "detectarC"
 			fi
 		else
-		    $GRUPO/$LIBDIR/moverC.sh -o $file -d $DIR_RECHAZADOS -c "detectarC"
+		    $GRUPO/$LIBDIR/moverC.sh -o "$file" -d $DIR_RECHAZADOS -c "detectarC"
 		    $GRUPO/$LIBDIR/loguearC.sh -w -t I -m "$MENSAJE_FORMATO_INVALIDO $file" -p "detectarC"
 		fi
 	done
+	IFS=$SAVEIFS
 	if [ "$(ls -1tr $DIR_APROBADOS)" ]; then
 	    chequearProcesoSumarC
 	    if [ $? -ne 0 ]; then

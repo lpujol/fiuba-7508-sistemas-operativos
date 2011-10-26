@@ -110,7 +110,6 @@ function writeLog
 	logentry="$logtime,$logusuario,$logtipo,$logmsg"
 
 	#Examinar tamano de archivo de log
-	logsize=`stat -c "%s" $logfile`
 	if [ $logsize -gt `expr $LOGSIZE \* 1024 - ${#logentry}` ]; then
 		#Si esta demasiado grande, borrar 50 porcientos de las lineas
 		#Calcular numero de lineas 
@@ -153,6 +152,7 @@ function viewLog
 	fi
 } #fin de viewLog
 
+
 #Ambiente iniciado?
 if [ -z $GRUPO ] 
   then
@@ -175,6 +175,8 @@ if [ -z $LOGEXT ]
   then
   LOGEXT=".log"
 fi
+
+cd $GRUPO/$LIBDIR
 
 #Borar variables
 logmsg=""

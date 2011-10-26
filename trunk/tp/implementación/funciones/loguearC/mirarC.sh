@@ -15,6 +15,7 @@
 	#  4 - Parametro inválido
 	#  5 - Archivo de log no existente
 
+cd $GRUPO/$LIBDIR
 
 ./loguearC.sh -v $1 $2 $3 $4 $5 $6 $7 $8
 

@@ -96,10 +96,13 @@ function cargarVariables() {
 		if [ "$LOGEXT" == "" ]; then
 			LOGEXT=`grep "LOGEXT" $CONFFILE | cut -s -f2 -d'='`
 		fi
-		export LOGEXT			
+		export LOGEXT
+    else 
+		return 1 		
 	fi	
-	PATH=$PATH:$GRUPO:$GRUPO$BINDIR"/"
+	PATH=$PATH:$GRUPO:$GRUPO/$BINDIR"/":$GRUPO/$LIBDIR"/"
 	export PATH
+	return 0
 }
 
 function checkearInstalacion(){
@@ -144,7 +147,7 @@ function checkearDetectarC(){
 }
 
 function iniciarDetectarC(){
-	../lib/StartD.sh ../bin/detectarC.sh
+	$GRUPO/$LIBDIR/StartD.sh
 	PIDDETECTARC=`ps | grep "detectarC.sh" | head -1 | awk '{print $1 }'`	
 	if [ "$PIDDETECTARC" != "" ]; then
 		return $PIDDETECTARC
@@ -163,6 +166,11 @@ checkearEntornoNoIniciado
 		done				
 	fi
 cargarVariables
+	if [ $? -eq 1 ]; then 
+		echo "Inicialización de Ambiente No fue exitosa." 
+		echo "Error: No se archivo de configuración" 
+		return 1 
+	fi
 checkearInstalacion
 	if [ $? -eq 1 ]; then
 		echo "Inicialización de Ambiente No fue exitosa."
