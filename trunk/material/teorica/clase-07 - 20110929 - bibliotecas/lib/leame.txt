@@ -1,0 +1,26 @@
+Instrucciones:
+ Son programas c, no c++. El link dinámico en c++ tiene otras
+  complicaciones (sobrecarga, despacho dinamico, etc).
+ Linkeo estatico:
+    Compilar con 
+	 gcc -static main.c util_uno.c util_dos.c util_tres.c -o prgestat
+	verificar el tamaño del archivo con
+	 size prgestat
+	comprobar que es estatico con 
+	 objdump -T prgestat
+ Linkeo dinamico
+     correr el make
+	  make all
+	 comparar el tamaño 
+	  size prgestat prog
+	 comprobar que es dinamico
+	   objdump -T prog
+	 al correr da un error. Ver que biblioteca falta con
+	    ldd prog
+     hacer accesible libutiles.so
+	    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
+	(se le pone el directorio actual (.) en el path de busqueda )
+	 ahora corre bien
+ Carga dinamica en ejecucion:
+    esta en el directorio dyn_shared
+	construir con make y probarla
