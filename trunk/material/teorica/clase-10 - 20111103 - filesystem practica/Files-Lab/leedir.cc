@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <cstdlib>
 #include <sys/types.h>
 #include <dirent.h>
 #include <iostream>
@@ -5,7 +7,7 @@ using namespace std;
 
 int main(int argc, char * argv[]){
 	if (argc != 2 ){
-		cerr<<"uso: "<<argv[0]<<" <archivo>"<<endl;
+		cerr<<"uso: "<<argv[0]<<" <directorio>"<<endl;
 	 	exit (1);
  	}
  	DIR * d=opendir(argv[1]);

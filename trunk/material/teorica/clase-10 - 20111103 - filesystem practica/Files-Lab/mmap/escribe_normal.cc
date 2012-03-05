@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <cstdlib>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -27,7 +29,7 @@ for (int i=0;i<100;i++){
 	num=10000+i;
 	write (fd,&num ,sizeof num);
 }
-cout<<"Escrito el arreglo al  file"<<endl;
+cout<<"Escrito el arreglo al file "<<argv[1]<<endl;
 close (fd);
 }
 
