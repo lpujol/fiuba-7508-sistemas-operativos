@@ -1,0 +1,2 @@
+{var dz=document;
+dz.writeln("<a href=\"http://media.fastclick.net/w/click.here?cid=371864&mid=693547&m=1&sid=51962&c=0&tp=1\" target=\"_blank\"><img src=\"http://cdn.fastclick.net/fastclick.net/cid371864/media693547.gif\" border=0 width=468 height=60 alt=\"Click Here\"></a>");}

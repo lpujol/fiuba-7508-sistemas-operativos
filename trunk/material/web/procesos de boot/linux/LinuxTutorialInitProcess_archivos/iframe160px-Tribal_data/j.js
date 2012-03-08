@@ -1,0 +1,1 @@
+document.write('<center><a target=_blank href="http://a.tribalfusion.com/h.click/aCmM7i5b6uVaMmVq37QqBZbSV3KPFmtPH39VcnT2FPpntur0qPu3WrGSGfZa4AJLoWetUH36Xbf8YU760qqtPbQZbUFBYWWQWmbJsPFvNYqFn5qYk2TMRmaMCXUJfTd7SoAnBnVvopWUK3aQf3dun3AvMMKOimv/http://www.energysavers.gov"><img src="http://cdn5.tribalfusion.com/media/3059346.jpeg" border=0 height=600 width=160 ><\/a><\/center>');

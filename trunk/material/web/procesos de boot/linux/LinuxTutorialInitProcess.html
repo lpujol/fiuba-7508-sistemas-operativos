@@ -1,0 +1,1569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><link media="all" href="LinuxTutorialInitProcess_archivos/widget079.css" type="text/css" rel="stylesheet"><script src="LinuxTutorialInitProcess_archivos/count" async="true" type="text/javascript"></script><link href="LinuxTutorialInitProcess_archivos/buttons3.css" type="text/css" rel="stylesheet">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Linux: Init Process and PC Boot Procedure</title>
+  <link rel="stylesheet" href="LinuxTutorialInitProcess_archivos/yolinux.css" type="text/css">
+  <link rel="canonical" href="http://www.yolinux.com/TUTORIALS/LinuxTutorialInitProcess.html">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="init,boot,sequence,chkconfiglinux,init process,linux boot procedure">
+  <meta name="description" content="Linux init and boot process tutorial and description.">
+  <meta name="author" content="Greg Ippolito">
+<script src="LinuxTutorialInitProcess_archivos/hosts.php" type="text/javascript"></script><script src="LinuxTutorialInitProcess_archivos/ads.php" type="text/javascript"></script></head>
+
+<body bgcolor="#cccccc"><div id="_atssh" style="visibility: hidden; height: 1px; width: 1px; position: absolute; z-index: 100000;"><iframe src="LinuxTutorialInitProcess_archivos/sh078.htm" style="height: 1px; width: 1px; position: absolute; z-index: 100000; border: 0pt none; left: 0pt; top: 0pt;" title="AddThis utility frame" id="_atssh997"></iframe></div>
+<hr size="5">
+<h1>YoLinux.com: Linux Init Process / PC Boot Procedure</h1>
+<p>
+</p>
+<!-- Original artwork by Paul Pettit of Venice CA (310)617-6250, Copyright YoLinux.com -->
+<table cellpadding="4" width="100%">
+<tbody>
+<tr>
+<td>
+<img src="LinuxTutorialInitProcess_archivos/tux-boot-ty2.gif">
+</td>
+<td valign="top">
+This tutorial covers the PC boot process and the Linux Operating System
+inititiation of background 
+applications (daemons/services). The sequence, configuration and
+administration of the Linux boot process is covered.
+This tutorial is Red Hat and Fedora specific. Other distributions and commercial
+versions of UNIX often use different run level assignments and/or 
+different script names.
+      
+      <p>
+Also see the YoLinux Tutorial on 
+      <a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialRecoveryAndBootDisk.html">Recovery and Boot disks</a>.
+      </p>
+<div align="center">
+<iframe class="adframe" allowtransparency="true" marginheight="0" marginwidth="0" style="border: medium none; padding: 0pt;" src="LinuxTutorialInitProcess_archivos/iframe728x90px-ValueClick.htm" frameborder="0" height="90" scrolling="no" width="720">
+</iframe>
+</div>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+</p>
+<!-- Navigation Menu bar -->
+<div id="globalNavigation">
+<table bgcolor="#000000" width="100%">
+<tbody>
+<tr bgcolor="#000000">
+<td colspan="3">
+<form method="post" action="http://www.yolinux.com/cgi-bin/htsearch">
+<input name="method" value="all" type="hidden"> 
+<input name="format" value="long" type="hidden"> 
+<input name="sort" value="score" type="hidden"> 
+<input name="config" value="htdig-yolinux" type="hidden"> 
+<input name="restrict" value="" type="hidden"> 
+<input name="exclude" value="" type="hidden"> 
+<label for="search">search</label>
+<input size="20" maxlength="80" name="words" id="search" type="text"> 
+<input value="Search" type="submit">
+</form></td>
+<td align="right">
+<font color="#f7bc33" size="-1">
+<b>
+&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/" class="menubar" title="YoLinux Home Page">Home Page</a>&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/TUTORIALS/" class="menubar" title="YoLinux Web Site Tutorials Index">Linux Tutorials</a>&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/YoLinux-Terms.html" class="menubar" title="YoLinux.com terms of use" rel="nofollow">Terms</a>&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/privacy.html" class="menubar" title="YoLinux.com privacy policy" rel="nofollow">Privacy Policy</a>&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/YoLinux-Advertising.html" class="menubar" title="Advertising rates for YoLinux.com">Advertising</a>&nbsp;|&nbsp;
+<a href="http://www.yolinux.com/YoLinuxEmailForm.html" class="menubar" title="Send us an email" rel="nofollow">Contact</a> &nbsp;|&nbsp;
+</b>
+</font>
+
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- End of Navigation menu bar -->
+
+<table bgcolor="#000000" border="0" cellpadding="4" cellspacing="1" width="100%">
+  <tbody>
+    <tr bgcolor="#cccccc">
+      <td bgcolor="#c0c0c0" valign="top" width="160">
+      <p>
+      <font size="-1">
+      <b>Related YoLinux Tutorials:</b>
+      </font></p>
+      
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialSysAdmin.html">Systems Administration</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialNetworking.html">Network configuration</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialInternetSecurity.html">Internet Security</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxListOfFonts.html">Linux Fonts</a></font></p>
+      <p>
+      </p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialMozillaConfiguration.html">Firefox Configuration</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialUsingDOSFloppies.html">Using DOS Floppies</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialMicrosoftWindowsNetworkIntegration.html">Integrate Linux into MS/Windows environment</a>
+      </font></p>
+      <p>
+      <font size="-1">°<a href="http://www.yolinux.com/TUTORIALS/">YoLinux Tutorials Index</a>
+      </font>
+      </p>
+
+
+<hr>
+<p>
+<!-- BEGIN RICH-MEDIA CODE -->
+<script async="" src="LinuxTutorialInitProcess_archivos/cbgapi.loaded0"></script><script type="text/javascript" async="" src="LinuxTutorialInitProcess_archivos/quant.js"></script><script src="LinuxTutorialInitProcess_archivos/widgets.js" async="" type="text/javascript"></script><script type="text/javascript"><!--
+google_ad_client = "pub-8567479315106986";
+/* 160x600, YoLinux default */
+google_ad_slot = "8947481941";
+google_ad_width = 160;
+google_ad_height = 600;
+//-->
+</script>
+<script type="text/javascript" src="LinuxTutorialInitProcess_archivos/show_ads.js">
+</script><ins style="display:inline-table;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:160px"><ins id="aswift_0_anchor" style="display:block;border:none;height:600px;margin:0;padding:0;position:relative;visibility:visible;width:160px"><iframe allowtransparency="true" hspace="0" marginwidth="0" marginheight="0" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){i+='.call';setTimeout(h,0)}else if(h.match){i+='.nav';w.location.replace(h)}s.log&amp;&amp;s.log.push(i)}" vspace="0" id="aswift_0" name="aswift_0" style="left: 0pt; position: absolute; top: 0pt;" frameborder="0" height="600" scrolling="no" width="160"></iframe></ins></ins>
+<script src="LinuxTutorialInitProcess_archivos/core000.js" type="text/javascript"></script></p>
+<hr>
+<p>
+<!-- Ad links -->
+<script type="text/javascript"><!-- 
+google_ad_client = "pub-8567479315106986";
+google_ad_width = 160;
+google_ad_height = 90;
+google_ad_format = "160x90_0ads_al_s";
+google_ad_channel ="";
+google_color_border = "FFFFFF";
+google_color_bg = "C0C0C0";
+google_color_link = "0000FF";
+google_color_text = "000000";
+google_color_url = "008000";
+//-->
+</script>
+<script type="text/javascript" src="LinuxTutorialInitProcess_archivos/show_ads.js">
+</script><ins style="display:inline-table;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:160px"><ins id="aswift_1_anchor" style="display:block;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:160px"><iframe allowtransparency="true" hspace="0" marginwidth="0" marginheight="0" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){i+='.call';setTimeout(h,0)}else if(h.match){i+='.nav';w.location.replace(h)}s.log&amp;&amp;s.log.push(i)}" vspace="0" id="aswift_1" name="aswift_1" style="left: 0pt; position: absolute; top: 0pt;" frameborder="0" height="90" scrolling="no" width="160"></iframe></ins></ins>
+</p>
+<!-- END CODE -->
+<hr>
+<p>
+<a href="http://yolinux.tradepub.com/">Free Information Technology Magazines and Document Downloads<br><img src="LinuxTutorialInitProcess_archivos/TradePubMagazines.gif" alt="TradePub link image" border="0"></a>
+</p>
+<hr>
+
+
+      <p>
+      </p>
+      </td>
+      <td>
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>PC Boot and Linux Init Process:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+      </p>
+
+      
+      <ol>
+        <li>BIOS: The Basic Input/Output System is the lowest level interface between the computer and peripherals. 
+    <br>
+
+The BIOS performs integrity checks on memory and seeks instructions on
+the Master Boor Record (MBR) on the floppy drive or hard drive.
+        </li>
+
+        <li>The MBR points to the boot loader (GRUB or LILO: Linux boot loader).
+        </li>
+
+        <li>Boot loader (GRUB or LILO) will then ask for the OS label which will 
+identify which kernel to run and where it is located (hard drive and partition specified). 
+The installation process requires to creation/identification of partitions and
+where to install the OS. GRUB/LILO are also configured during this process.
+The boot loader then loads the Linux operating system.
+    
+          
+          <ul>
+          <li>See the YoLinux tutorial on 
+              <a href="http://www.yolinux.com/TUTORIALS/LinuxTutorialRecoveryAndBootDisk.html">creating a boot disk</a>
+              for more information on GRUB and LILO and also to learn how to put 
+              the MBR and boot loader on a floppy for system recovery.
+          </li>
+          </ul>
+        </li>
+
+        <li>The first thing the kernel does is to execute <tt>init</tt> program. Init is the root/parent of all processes executing on Linux.
+        </li>
+
+        <li>The first processes that init starts is a script <tt>/etc/rc.d/rc.sysinit</tt>
+        </li>
+
+        <li>Based on the appropriate run-level, scripts are executed to start various processes to run the system and make it functional.
+        </li>
+      </ol>
+
+      <p>
+      </p>
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>The Linux Init Processes:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+The init process is the last step in the boot procedure and identified
+by process id "1".  
+Init is responsible for starting system processes as defined in the 
+      <tt>/etc/inittab</tt> file. 
+Init typically will start multiple instances of "getty" which waits for 
+console logins which spawn one's user shell process.
+Upon shutdown, init
+controls the sequence and processes for shutdown.
+The init process is never shut down. It is a user process and not a 
+kernel system process although it does run as root.
+      </p>
+
+      <p>
+System Processes:
+      </p>
+
+      <dl>
+        <dd>
+          <table border="1">
+            <tbody>
+              <tr bgcolor="a0a0a0">
+                <th>Process ID</th>
+                <th>Description</th>
+              </tr>
+
+
+              <tr>
+                <td>0</td>
+                <td>The Scheduler</td>
+              </tr>
+
+              <tr>
+                <td>1</td>
+                <td>The init process</td>
+              </tr>
+
+              <tr>
+                <td>2</td>
+                <td>kflushd</td>
+              </tr>
+
+              <tr>
+                <td>3</td>
+                <td>kupdate</td>
+              </tr>
+
+              <tr>
+                <td>4</td>
+                <td>kpiod</td>
+              </tr>
+
+              <tr>
+                <td>5</td>
+                <td>kswapd</td>
+              </tr>
+
+              <tr>
+                <td>6</td>
+                <td>mdrecoveryd</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </dd>
+      </dl>
+      
+      <p>
+Init config file (Red Hat 7.3-9.0, Fedora Core 1-3): <tt>/etc/inittab</tt>
+      </p>
+      <p>
+      </p>
+
+      <dl>
+        <dd>
+          <table bgcolor="#000000" border="0" cellpadding="4" cellspacing="1" width="100%">
+            <tbody>
+              <tr bgcolor="#c0c0c0">
+                <td>
+                <pre># Author:       Miquel van Smoorenburg, <miquels @drinkel.nl.mugnet.org="">
+#               Modified for RHS Linux by Marc Ewing and Donnie Barnes
+
+id:3:initdefault:
+
+# System initialization.
+si::sysinit:/etc/rc.d/rc.sysinit
+
+l0:0:wait:/etc/rc.d/rc 0
+l1:1:wait:/etc/rc.d/rc 1
+l2:2:wait:/etc/rc.d/rc 2
+l3:3:wait:/etc/rc.d/rc 3
+l4:4:wait:/etc/rc.d/rc 4
+l5:5:wait:/etc/rc.d/rc 5
+l6:6:wait:/etc/rc.d/rc 6
+
+# Things to run in every runlevel.  <b>This line is only in Red Hat 7.X Used to flush disk buffers.</b>
+ud::once:/sbin/update
+
+# Trap CTRL-ALT-DELETE
+ca::ctrlaltdel:/sbin/shutdown -t3 -r now
+
+# When our UPS tells us power has failed, schedule a shutdown for 2 minutes from now.
+pf::powerfail:/sbin/shutdown -f -h +2 "Power Failure; System Shutting Down"
+
+# If power was restored before the shutdown kicked in, cancel it.
+pr:12345:powerokwait:/sbin/shutdown -c "Power Restored; Shutdown Canceled"
+
+# Run gettys in standard runlevels
+1:2345:respawn:/sbin/mingetty tty1
+2:2345:respawn:/sbin/mingetty tty2
+3:2345:respawn:/sbin/mingetty tty3
+4:2345:respawn:/sbin/mingetty tty4
+5:2345:respawn:/sbin/mingetty tty5
+6:2345:respawn:/sbin/mingetty tty6
+
+# Run xdm in runlevel 5
+x:5:respawn:/etc/X11/prefdm -nodaemon
+</miquels></pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </dd>
+      </dl>
+      
+      <p>
+Note that this config file directs the init process to run the shell script 
+      <tt>/etc/rc.d/rc.sysinit</tt>. This script should be used as is and NOT changed. Extend <tt>rc.local</tt> and NOT this script. This will (not in exact order):
+      </p>
+
+      
+      <ul>
+
+
+        <li>Run <tt>/sbin/<a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=initlog">initlog</a></tt>
+        </li>
+
+        <li>Run devfs to generate/manage system devices
+        </li>
+
+        <li>Run network scripts: <tt>/etc/sysconfig/network</tt>
+        </li>
+
+        <li>Start graphical boot (If so configured): 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=rhgb">rhgb</a>
+        </li>
+
+        <li>Start console terminals, load keymap, system fonts and print console greeting:
+            <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=mingetty">mingetty</a>, 
+            <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=setsysfonts">setsysfonts</a>
+            <br>
+            The various virtual console sessions can be viewed with the key-stroke: 
+            <ul>
+            <li>RHEL6: <tt>ctrl-alt-F2</tt> through <tt>F7</tt>. F1 is reserved for the GUI screen invoked in run level 5.
+            </li>
+            <li>Older systems: <tt>ctrl-alt-F1</tt> through <tt>F6</tt>. F7 is reserved for the GUI screen invoked in run level 5.
+            </li>
+            </ul>
+        </li>
+
+        <li>Mount <tt>/proc</tt> and start device controllers.
+        </li>
+
+        <li>Done with boot configuration for root drive. 
+(<tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=initrd">initrd</a></tt>)
+Unmount root drive. 
+        </li>
+
+        <li>Re-mount root file system as read/write
+        </li>
+
+        <li>Direct kernel to load kernel parameters and modules: <tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=sysctl">sysctl</a></tt>, 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=depmod">depmod</a>, 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=modprobe">modprobe</a>
+        </li>
+
+        <li>Set up clock: <tt>/etc/sysconfig/clock</tt>
+        </li>
+
+        <li>Perform disk operations based on fsck configuration
+        </li>
+
+        <li>Check/mount/check/enable quotas non-root file systems: 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=fsck">fsck</a>, 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=mount">mount</a>, 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=quotacheck">quotacheck</a>, 
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=quotaon">quotaon</a>
+        </li>
+
+        <li>Initialize logical volume management:
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=vgscan">vgscan</a>, <tt>/etc/lvmtab</tt>
+        </li>
+
+        <li>Activate syslog, write to log files:
+    <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=dmesg">dmesg</a>
+        </li>
+
+        <li>Configure sound: <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=sndconfig">sndconfig</a>
+        </li>
+
+        <li>Activate PAM
+        </li>
+
+        <li>Activate swapping: <tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=swapon">swapon</a></tt>
+        </li>
+
+      
+      </ul>
+
+
+      
+      <p>
+Local system boot processes can be placed in file: <tt>/etc/rc.d/rc.local</tt>
+      </p>
+
+      
+      <p>
+The system will then boot to the runlevel set by the directive <tt>initdefault</tt>. 
+      </p>
+
+      
+      <p>
+Also see:
+      </p>
+
+      
+      <ul>
+
+
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=init">init</a> man page
+        </li>
+
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=inittab">inittab</a> man page
+        </li>
+
+      
+      </ul>
+
+
+      <a name="BOOTPROCEDURE"></a>
+      
+      <p>
+      </p>
+
+      
+      <hr size="5">
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+
+
+        <tbody>
+
+          <tr bgcolor="#ffcc33">
+
+            <td><b><big>Linux init Run Levels:</big></b></td>
+
+          </tr>
+
+
+        
+        </tbody>
+      
+      </table>
+
+
+      
+      <p>
+The Linux boot process has six states of operation of which  "0" is the shutdown state and "3" 
+and above are fully operational with all essential
+processes running for user interaction. Upon system boot the
+LINUX system <tt>/sbin/init</tt> program starts other processes by performing the following:
+      </p>
+
+      
+      <ul>
+
+
+        <li>Init will bring up the machine by starting processes
+    as defined in the <tt>/etc/inittab</tt> file.
+    
+          
+          <p>
+          </p>
+
+        </li>
+
+        <li>The computer will be booted to the runlevel as defined by the 
+    <tt>initdefault</tt> directive
+    in the <tt>/etc/inittab</tt> file. 
+    
+          
+          <dl>
+
+            <dd>
+    
+              
+              <table bgcolor="#000000" border="0" cellpadding="4" cellspacing="1" width="100%">
+
+
+    <tbody>
+
+                  <tr bgcolor="#c0c0c0">
+
+                    <td>
+    
+                    
+                    <pre>    id:5:initdefault:<br>    </pre>
+
+
+    </td>
+
+                  </tr>
+
+                
+                </tbody>
+              
+              </table>
+
+
+    </dd>
+
+          
+          </dl>
+
+
+    In this example a runlevel of "5" is chosen. Runlevel "5" will boot the 
+    system into GUI mode using XDM and X-Windows. Booting to runlevel "3" (often
+    called console mode) is 
+    often used by servers which do not need a graphical user interface. 
+    If booted to init level "3" one can promote the run level with the command
+    <tt><b>[root prompt]#</b> init 5</tt>.
+    See the more detailed explanation of run levels below.
+    
+          
+          <p>
+    The inittab file will allow
+    you to capture key sequences (ctrl-alt-del), start dial in internet
+    connections etc.
+    </p>
+
+          
+          <p>
+          </p>
+
+        </li>
+
+        <li>One of these process started by init is <tt>/sbin/rc</tt>. 
+    This script runs a series of scripts in the directories 
+    <tt>/etc/rc.d/rc0.d/</tt>, <tt>/etc/rc.d/rc1.d/</tt>, 
+    <tt>/etc/rc.d/rc2.d/</tt>, etc
+    
+          
+          <p>
+          </p>
+
+        </li>
+
+        <li>Scripts in these directories are executed for each boot state of
+    operation until it becomes fully operational. Scripts beginning
+    with  S  denote startup scripts while scripts beginning with  K denote 
+    shutdown (kill) scripts. Numbers follow these letters to
+    denote the order of execution. (lowest to highest)
+        </li>
+
+      
+      </ul>
+
+
+      <a name="RUNLEVELS"></a>
+      
+      <p>
+      </p>
+
+      
+      <hr>
+      
+      <p>
+Runlevel  "3" will boot to text or console mode and  "5" will boot to
+the graphical login mode ( "4" for slackware)
+      </p>
+
+      
+      <p>
+      </p>
+
+      
+      <dl>
+
+        <dd>
+          
+          <table border="1">
+
+
+            <tbody>
+
+              <tr bgcolor="#a0a0a0">
+
+                <th valign="top">Runlevel</th>
+
+                <th valign="top">Scripts Directory<br>
+
+(Red Hat/Fedora Core)</th>
+
+                <th valign="top">State</th>
+
+              </tr>
+
+
+              <tr>
+
+                <td>0</td>
+
+                <td><tt>/etc/rc.d/rc0.d/</tt></td>
+
+                <td>shutdown/halt system</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>1</td>
+
+                <td><tt>/etc/rc.d/rc1.d/</tt></td>
+
+                <td>Single user mode</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>2</td>
+
+                <td><tt>/etc/rc.d/rc2.d/</tt></td>
+
+                <td>Multiuser with no network services exported</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>3</td>
+
+                <td><tt>/etc/rc.d/rc3.d/</tt></td>
+
+                <td>Default text/console only start. Full multiuser</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>4</td>
+
+                <td><tt>/etc/rc.d/rc4.d/</tt></td>
+
+                <td>Reserved for local use. Also X-windows (Slackware/BSD)</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>5</td>
+
+                <td><tt>/etc/rc.d/rc5.d/</tt></td>
+
+                <td>XDM X-windows GUI mode (Redhat/System V)</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>6</td>
+
+                <td><tt>/etc/rc.d/rc6.d/</tt></td>
+
+                <td>Reboot</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>s or S</td>
+
+                <td><br>
+
+                </td>
+
+                <td>Single user/Maintenance mode (Slackware)</td>
+
+              </tr>
+
+
+              <tr>
+
+                <td>M</td>
+
+                <td><br>
+
+                </td>
+
+                <td>Multiuser mode (Slackware)</td>
+
+              </tr>
+
+
+            
+            </tbody>
+          
+          </table>
+
+
+        </dd>
+
+      
+      </dl>
+
+
+      
+      <p>
+One may switch init levels by issuing the init command with the
+appropriate runlevel. Use the command "<tt>init <b><i>#</i></b></tt>"
+ where # is one of s,S,0,1,3,5,6. 
+The command <tt>telinit</tt> does the same.
+      </p>
+
+      
+      <p>
+The scripts for a given run level are run during boot and shutdown.
+The scripts are found in the directory <tt>/etc/rc.d/rc<b>#</b>.d/</tt> 
+where the symbol <b>#</b> represents the run level. i.e. the run level "3"
+will run all the scripts in the directory <tt>/etc/rc.d/rc3.d/</tt> which 
+start with the letter "S" during system boot. 
+This starts the background processes required by the system.
+During shutdown all scripts in the directory which 
+begin with the letter "K" will be executed. 
+This system provides an orderly way to bring the system to different states for
+production and maintenance modes. 
+      </p>
+
+      
+      <p>If you installed all demons (background processes), Linux will
+run
+them all. To avoid slowing down your machine, remove unneeded services
+from the start-up procedure. You can start/stop individual
+demons by running service init scripts located in the <tt>/etc/init.d/</tt> directory:
+      </p>
+
+      
+      <ul>
+        <li><tt>/etc/rc.d/init.d/</tt>  (Red Hat/Fedora) Also <tt>/etc/init.d/</tt> which is linked to <tt>/etc/rc.d/init.d/</tt>
+        </li>
+        <li><tt>/etc/init.d/</tt> (S.u.s.e.)
+        </li>
+        <li><tt>/etc/init.d/</tt> (Ubuntu / Debian)
+        </li>
+      </ul>
+
+
+and issuing the
+command and either the start, stop, status, restart or reload option
+i.e. to stop the web server:
+      
+      <ul>
+        <li><tt>/etc/init.d/httpd stop</tt>
+        </li>
+      </ul>
+
+
+      
+      <p>
+Use the command  ps -aux  to view all process on your machine.
+      </p>
+
+      
+      <p>
+      <b>TIP:</b> List state and run level of all services which can be started by init: <tt>chkconfig --list</tt>
+      <br>
+
+or
+      <br>
+
+      <tt>service  --status-all | grep running</tt> (Red Hat/Fedora Core based systems)
+      </p>
+
+      
+      <p>
+      <b>GUI tool:</b> <tt>/usr/X11R6/bin/tksysv</tt>
+      <a name="COMMANDS"></a>
+      </p>
+
+      
+      <p>
+      </p>
+
+      
+      <hr size="5">
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>Run Level Commands:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>
+      </p>
+
+      <ul>
+        <li>Shutdown:
+          <ul>
+    <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=init">init</a> 0</tt>
+    </li>
+
+            <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=shutdown">shutdown</a> -h now</tt>
+        
+              
+              <ul>
+        <li>-a: Use file <tt>/etc/shutdown.allow</tt>
+        </li>
+                <li>-c: Cancel scheduled shutdown.
+        </li>
+              </ul>
+    </li>
+            <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=halt">halt</a> -p</tt>
+              <ul>
+        <li>-p: Turn power off after shutdown.
+        </li>
+              </ul>
+    </li>
+            <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=poweroff">poweroff</a></tt>
+    </li>
+          </ul>
+        </li>
+
+        <li>Reboot:
+          <ul>
+    <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=init">init</a> 6</tt>
+    </li>
+            <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=shutdown">shutdown</a> -r now</tt>
+    </li>
+            <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=reboot">reboot</a></tt>
+    </li>
+          </ul>
+        </li>
+        <li>Enter single user mode:
+          <ul>
+    <li><tt><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=init">init</a> 1</tt>
+    </li>
+          </ul>
+        </li>
+      </ul>
+
+      <a name="INITSCRIPTACTIVATION"></a>
+      
+      <p>
+      </p>
+
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>Init Script Activation:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>
+Adding a script to the <tt>/etc/rc.d/rc<b>#</b>.d/</tt> directory with 
+either an  S  or K  prefix, adds the script to the boot or shutdown process. 
+The scripts are run in numerical order. S20abc is run before S30xyz.
+The extensibility to the boot and shutdown procedures of the
+operating system is one of the strengths of UNIX. The orderly
+sequential initiation of processes can be coordinated for dependent
+processes. The orderly shutdown of processes is often required of
+complex programs such as databases. This is how it is done.
+Individual processes may be monitored, shutdown and started at
+any time using these scripts. i.e. <tt>/etc/rc.d/rc2.d/httpd start</tt>. 
+The modifiers <tt>start, stop</tt> or <tt>status</tt> may be used.
+      </p>
+
+      
+      <p>
+The start/stop/status scripts actually reside in the directory:
+      </p>
+
+      
+      <ul>
+        <li><tt>/etc/rc.d/init.d/</tt> (Red Hat/Fedora) Also <tt>/etc/init.d/</tt> which is linked to <tt>/etc/rc.d/init.d/</tt>
+        </li>
+
+        <li><tt>/etc/init.d/</tt> (S.u.s.e. and Ubuntu / Debian)
+        </li>
+
+      
+      </ul>
+
+
+and are linked to the appropriate directories. These links may be
+created or destroyed using the chkconfig command. 
+i.e. <tt>chkconfig --del httpd</tt> will remove the web server from the 
+startup and shutdown process. 
+Inversely <tt>chkconfig --add httpd</tt> will add it to the startup/shutdown 
+process by generating links from the script
+in <tt>/etc/rc.d/init.d/</tt> to the appropriate <tt>/etc/rc.d/rc<b>#</b>.d/</tt>
+ directory.
+For more information see the LINUX manual page on 
+      <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=init">init</a>.
+      
+      <p>
+Basic services include:
+      </p>
+
+      
+      <p>
+      </p>
+
+      
+      <table border="1">
+        <tbody>
+          <tr bgcolor="#a0a0a0">
+            <th>System Service</th>
+            <th>Description</th>
+          </tr>
+
+          <tr>
+            <td>anacron</td>
+            <td>Run jobs which were scheduled for execution while computer was turned off. Catch up with system duties.</td>
+          </tr>
+
+          <tr>
+            <td>arpwatch</td>
+            <td>Keeps track of IP address to MAC address pairings</td>
+          </tr>
+
+          <tr>
+            <td>atd</td>
+            <td>Run scheduled batch jobs.</td>
+          </tr>
+
+          <tr>
+            <td>autofs</td>
+            <td>automounts file systems on demand.</td>
+          </tr>
+
+          <tr>
+            <td>bluetooth, pand, hidd, dund</td>
+            <td>Bluetooth netwoork support.</td>
+          </tr>
+
+          <tr>
+            <td>crond</td>
+            <td>Job sheduler for periodic tasks.</td>
+          </tr>
+
+          <tr>
+            <td>gpm</td>
+            <td>Allows console terminal cut and paste. (Non X-window consoles)</td>
+          </tr>
+
+          <tr>
+            <td>https</td>
+            <td>Apache web server.</td>
+          </tr>
+
+          <tr>
+            <td>iptables</td>
+            <td>Firewall rules interface to kernel.</td>
+          </tr>
+
+          <tr>
+            <td>keytable</td>
+            <td>Loads selected keyboard map as set in <tt>/etc/sysconfig/keyboard</tt></td>
+          </tr>
+
+          <tr>
+            <td>kudzu</td>
+            <td>New hardware probe/detection during system boot.</td>
+          </tr>
+
+          <tr>
+            <td>lpd or cups</td>
+            <td>Network printer services.</td>
+          </tr>
+
+          <tr>
+            <td>microcode_ctl</td>
+            <td>Uploads microcode to kernel and ultimately to the Intle Pentium processor. (Hardware specific.)</td>
+          </tr>
+
+          <tr>
+            <td>mysqld</td>
+            <td>Database services</td>
+          </tr>
+
+          <tr>
+            <td>named</td>
+            <td>DNS name services (Bind)</td>
+          </tr>
+
+          <tr>
+            <td>network</td>
+            <td>Active network services during system boot. Required for network connectivity.</td>
+          </tr>
+
+          <tr>
+            <td>nfs</td>
+            <td>Network file system. Unix file sharing services. Also uses services: nfslock, portmap, rpcgssd, rpcidmapd, rpcsvcgssd</td>
+          </tr>
+
+          <tr>
+            <td>nscd</td>
+            <td>Password and group lookup services for use with network authentication (NIS, LDAP,...).</td>
+          </tr>
+
+          <tr>
+            <td>ntpd</td>
+            <td>Network Time Protocol time synchronization services.</td>
+          </tr>
+
+          <tr>
+            <td>random</td>
+            <td>Random number generation tool used for encryption.</td>
+          </tr>
+
+          <tr>
+            <td>rawdevices</td>
+            <td>Enables raw IO. Useful for Oracle and software which utilizes this for high speed disk access.</td>
+          </tr>
+
+          <tr>
+            <td>smb</td>
+            <td>SAMBA: MS/Windows PC file sharing services</td>
+          </tr>
+
+          <tr>
+            <td>syslog</td>
+            <td>System log file facility.</td>
+          </tr>
+
+          <tr>
+            <td>ypbind</td>
+            <td>NIS file sharing/authentication infrastructure service.</td>
+          </tr>
+
+          <tr>
+            <td>yppasswd</td>
+            <td>NIS file sharing/authentication infrastructure service.</td>
+          </tr>
+
+          <tr>
+            <td>ypserv</td>
+            <td>NIS file sharing/authentication infrastructure service.</td>
+          </tr>
+
+          <tr>
+            <td>xfs</td>
+            <td>X-Windows font server.</td>
+          </tr>
+
+        </tbody>
+      </table>
+      <p>
+Recommended basic services: <tt>anacron, ard, autofs, crond, gpm, iptables, keytable, kudzu, microcode_ctl</tt> (Intel32 hardware only), <tt>network, random. syslog</tt>
+      <br>
+Graphics Workstation - add: <tt>xfs</tt>
+      <br>
+File Server for PC clients - add: <tt>smb</tt>
+      <br>
+Print Server - add: <tt>lpd</tt> or <tt>cups</tt> (<tt>hplip</tt> - HP Linux Imaging and Printing)
+      <br>
+File server Linux/Unix clients - add: <tt>nfs, netfs, nfslock, portmap, ypbind, yppasswd, ypserv</tt>; NFSv4 add: <tt>rpcgssd, rpcidmapd, rpcsvcgssd</tt>
+      <br>
+Web Server - add: <tt>httpd, tux, xinetdi, sshd</tt>
+      </p>
+      
+      <p>
+      </p>
+      <hr>
+      <p>
+      </p>
+      <h4>GUI configuration tools:</h4>
+GUI tools can help you configure the appropriate services to start and provide 
+a description of each service available:
+      <ul>
+        <li>Fedora/RHEL: <tt>/usr/bin/system-config-services</tt>
+        <br>
+        (Also <tt>/usr/sbin/serviceconf</tt>)
+        </li>
+        <li>Red Hat 8.0/9.0: <tt>/usr/bin/redhat-config-services</tt>
+        </li>
+        <li>Ubuntu / Debian: 
+          <ul>
+          <li><tt>bum</tt> (Boot Up Manager) (<a href="http://www.yolinux.com/TUTORIALS/images/Ubuntu_bum.gif">GUI image</a>)
+          </li>
+          <li><tt>/usr/bin/services-admin</tt> (<a href="http://www.yolinux.com/TUTORIALS/images/Ubuntu_services-admin.gif">GUI image</a>)
+          </li>
+          <li><tt>/usr/sbin/sysv-rc-conf</tt> (console program - see below)
+          </li>
+          </ul>
+        </li>
+      </ul>
+
+
+Red Hat / Fedora Core GUI: system-config-services (and redhat-config-services)
+      
+      <dl>
+        <dd>
+          <img src="LinuxTutorialInitProcess_archivos/redhat-config-services.gif">
+        </dd>
+      </dl>
+
+      <p>
+Red Hat/Fedora Core text console services selection tool: <tt>/usr/sbin/ntsysv</tt>
+      </p>
+      <dl>
+        <dd>
+          <img src="LinuxTutorialInitProcess_archivos/ntsysv.gif">
+        </dd>
+      </dl>
+
+      <p>
+Debian/Ubuntu: <tt>sysv-rc-conf</tt>
+<br>(Install: <tt>aptget install sysv-rc-conf</tt>)
+      </p>
+      <dl>
+        <dd>
+          <img src="LinuxTutorialInitProcess_archivos/sysv-rc-conf.gif">
+        </dd>
+      </dl>
+
+      <a name="INITSCRIPT"></a>
+      
+      <p>
+      </p>
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>Init Script:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>
+A single copy of the script is located in the directory: <tt>/etc/rc.d/init.d/<i><b>script-name</b></i></tt> (Red Hat/Fedora) or <tt>/etc/init.d/<i><b>script-name</b></i></tt> (Ubuntu / Debian).
+      <br>
+Use the command <tt>chkconfig</tt> to generate soft links to the appropriate directories for the various run levels.
+      </p>
+      
+      <p>
+      </p>
+
+      
+      <dl>
+        <dd>
+          <table bgcolor="#000000" border="0" cellpadding="4" cellspacing="1" width="100%">
+            <tbody>
+              <tr bgcolor="#c0c0c0">
+                <td>
+                <pre>#!/bin/sh<br>#<br># Startup script for <i>program</i>
+#
+# chkconfig: 345 85 15     <i><b>- start or stop process definition within the boot process</b></i>
+# description: <i>Description of program</i>
+# processname: <i><b>process-name</b></i>
+# pidfile: /var/run/<i><b>process-name</b></i>.pid<br><br># Source function library.      <i>This creates the operating environment for the process to be started</i>
+. /etc/rc.d/init.d/functions
+
+case "$1" in
+  start)
+        echo -n "Starting  <i><b>process-name</b></i>: "<br>        daemon  <i><b>process-name</b></i>                 <i><b>- Starts only one process of a given name.</b></i>
+        echo
+        touch /var/lock/subsys/<i><b>process-name</b></i>
+        ;;
+  stop)
+        echo -n "Shutting down <i><b>process-name</b></i>: "<br>        killproc <i><b>process-name</b></i>
+        echo
+        rm -f /var/lock/subsys/<i><b>process-name</b></i>
+        rm -f /var/run/<i><b>process-name</b></i>.pid      <i><b>- Only if process generates this file</b></i>
+        ;;
+  status)
+        status <i><b>process-name</b></i>
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  reload)
+        echo -n "Reloading <i><b>process-name</b></i>: "<br>        killproc <i><b>process-name</b></i> -HUP<br>        echo<br>        ;;<br>  *)<br>        echo "Usage: $0 {start|stop|restart|reload|status}"<br>        exit 1<br>esac<br><br>exit 0<br><br></pre>
+
+
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </dd>
+      </dl>
+      
+      <p>
+The bash script functions <tt>daemon, killproc and status</tt> can all be found in the script <tt>/etc/rc.d/init.d/functions</tt>. (Red Hat/Fedora distributions)
+      </p>
+      
+      <p>
+      </p>
+      <hr>
+      <p>
+The script must be executable to work. (<tt>chmod +x <i>script-name</i></tt>).
+      </p>
+      <p>
+The script may be used to start and stop processes. i.e.:
+      </p>
+      <ul>
+        <li><tt>/etc/rc.d/init.d/httpd restart</tt>
+        <br>
+        (Ubuntu / Debian / S.u.s.e.: <tt>/etc/init.d/apache2 restart</tt>)
+        </li>
+        <li><tt>/etc/rc.d/init.d/httpd stop</tt>
+        </li>
+        <li><tt>/etc/rc.d/init.d/httpd start</tt>
+        </li>
+      </ul>
+
+
+      <b>OR</b> use the Red Hat/Fedora core based <tt>service</tt> command:
+      <ul>
+        <li><tt>service httpd restart</tt>
+        </li>
+        <li><tt>service httpd stop</tt>
+        </li>
+        <li><tt>service httpd start</tt>
+        </li>
+      </ul>
+      <p>
+Note that two lines in the script enable the <tt>chkconfig</tt> command to 
+control the script for the boot and shutdown process.
+      </p>
+      <dl>
+        <dd>
+          <pre># chkconfig: 345 85 15 <br># description: <i><b>Description of program</b></i>
+          </pre>
+        </dd>
+      </dl>
+      
+      <p>
+When added to the boot process using the "<tt>chkconfig --add <i><b>script-name</b></i></tt>" command
+the start order/priority will be set to 80 while the stop/shutdown order
+will be set to 15. The process will be added to runlevels 3, 4 and 5.
+This is enabled by generating links from the location of the script
+(<tt>/etc/rc.d/init.d/</tt>) to the directory for the appropriate run level:
+      <tt>/etc/rc.d/rc<b>#</b>.d/</tt>.
+The file name in the run level directory will reflect if it is used for boot
+(starts with an "S") or shutdown (starts with a "K") 
+      </p>
+
+      
+      <p>
+      </p>
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>chkconfig:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+The (Red Hat/Fedora/IRIX) <tt>chkconfig</tt> command generates and breaks links between the 
+directory <tt>/etc/rc.d/init.d/</tt> and the appropriate run level directory:
+      <tt>/etc/rc.d/rc<b>[0-6]</b>.d/</tt> to control boot process initiation and process
+shutdown.
+      </p>
+
+      
+      <p>
+      </p>
+      <pre>     chkconfig [--level <levels>] <name> on | off | reset &gt;<br>     chkconfig --list<br>     chkconfig --list<br>     chkconfig --add <name>
+
+     chkconfig --del <name>
+     chkconfig --level 0123456 <name> off<br>      </name></name></name></name></levels></pre>
+      <p>
+Examples:
+      </p>
+      
+      <ul>
+        <li> <tt>chkconfig --level 345 httpd on</tt> - forces apache to be invoked for run levels 3, 4 and 5.
+        </li>
+        <li> <tt>chkconfig --add httpd</tt> - Start the web server daemon upon system boot.
+        </li>
+        <li> <tt>chkconfig --del sendmail</tt> - Do not start the sendmail daemon upon system boot.
+        </li>
+        <li> <tt>chkconfig --list</tt> - List all services and init levels.
+        </li>
+        <li> <tt>chkconfig --list | grep on</tt> - List all services to be started upon system boot.
+        </li>
+      </ul>
+      <p>
+Using chkconfig to administer xinetd processes. 
+      </p>
+      
+      <ul>
+        <li><tt>chkconfig wu-ftpd on</tt> - Turn on FTP service managed by xinetd.
+        </li>
+        <li><tt>chkconfig ipop3 off</tt> - Turn off POP3 service managed by xinetd.
+        </li>
+      </ul>
+This will reconfigure the appropriate xinetd file 
+(in directory <tt>/etc/xinetd.d/</tt>) and restart the xinetdprocess.
+      <p>
+Also see: <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=chkconfig">chkconfig - Linux man page</a>.
+      </p>
+
+      <p>
+      </p>
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>Related Commands:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>
+      </p>
+
+      
+      <dl>
+        <dd>
+          <table cellpadding="5">
+            <tbody>
+              <tr>
+                <td valign="top"><tt>service</tt></td>
+                <td valign="top">Display status of system services.<br>
+Example: <tt>service --status-all</tt><br>
+Help: <tt>service --help</tt></td>
+              </tr>
+            </tbody>
+          </table>
+        </dd>
+      </dl>
+      
+      <p>
+Also see: <a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=service">service - Linux man page</a>.
+      </p>
+      
+      <p>
+      </p>
+
+      
+      <table border="0" cellpadding="2" cellspacing="0" width="100%">
+        <tbody>
+          <tr bgcolor="#ffcc33">
+            <td><b><big>Links and resources:</big></b></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p>
+      </p>
+      
+      <ul>
+        <li><a href="http://www.linuxbase.org/spec/refspecs/LSB_1.0.0/gLSB/sysinit.html">Linux Standard Base Specification</a> - System Initialization (Chapter 18)
+        </li>
+        <li>Redhat Manual: The Boot Process, Init, and Shutdown - 
+    <a href="http://www.redhat.com/docs/manuals/linux/RHL-7.1-Manual/ref-guide/ch-boot-init-shutdown.html">7.1</a> - 
+    <a href="http://www.redhat.com/docs/manuals/linux/RHL-6.2-Manual/ref-guide/s1-sysadmin-boot.html">6.2</a>
+        </li>
+      
+      </ul>
+      </td>
+
+      <td bgcolor="#c0c0c0" valign="top" width="160">
+<!-- AddThis Button BEGIN -->
+<div id="bookmark" align="left">
+&nbsp;&nbsp;&nbsp;
+<!-- Google +1: Place this tag where you want the +1 button to render -->
+<div style="height: 15px; width: 70px; display: inline-block; text-indent: 0pt; margin: 0pt; padding: 0pt; background: none repeat scroll 0% 0% transparent; border-style: none; float: none; line-height: normal; font-size: 1px; vertical-align: baseline;" id="___plusone_0"><iframe allowtransparency="true" hspace="0" id="I1_1331176739082" marginheight="0" marginwidth="0" name="I1_1331176739082" src="LinuxTutorialInitProcess_archivos/fastbutton.htm" style="position: static; left: 0pt; top: 0pt; width: 70px; margin: 0px; border-style: none; visibility: visible; height: 15px;" tabindex="0" vspace="0" title="+1" frameborder="0" scrolling="no" width="100%"></iframe></div>
+<br>
+&nbsp;&nbsp;&nbsp;
+<a href="http://www.addthis.com/bookmark.php?v=250&amp;pub=yolinux" onmouseover="return addthis_open(this, '', '[URL]', '[TITLE]')" onmouseout="addthis_close()" onclick="return addthis_sendto()"><img src="LinuxTutorialInitProcess_archivos/lg-bookmark-en.gif" alt="Bookmark and Share" style="border: 0pt none;" height="16" width="125"></a>
+<script type="text/javascript" src="LinuxTutorialInitProcess_archivos/addthis_widget.js">
+</script>
+</div>
+<!-- AddThis Button END -->
+<hr>
+<p>
+</p>
+<div align="center">
+<a href="http://www.anrdoezrs.net/click-5533903-10450961">
+<img src="LinuxTutorialInitProcess_archivos/image-5533903-10450961.jpg" alt="" height="600" border="0" width="160"></a>
+</div>
+<p>
+</p>
+<hr>
+<p>
+</p>
+<div align="center">
+<iframe class="adframe" allowtransparency="true" marginheight="0" marginwidth="0" style="border: medium none; padding: 0pt;" src="LinuxTutorialInitProcess_archivos/iframe160px-Tribal.htm" frameborder="0" height="600" scrolling="no" width="160">
+</iframe>
+</div>
+
+<p>
+</p>
+<hr>
+<p>
+</p>
+<div align="center">
+<p>
+<font color="#f0f0f0">Advertisement</font>
+</p>
+<b>Levono UK:</b>
+<br>
+<script type="text/javascript" language="javascript" src="LinuxTutorialInitProcess_archivos/placeholder-5787758"></script><a href="javascript:submitCJ10846000X593('CJ10846000X593',null);"><img src="LinuxTutorialInitProcess_archivos/10846000-10.jpg" alt="&lt;link&gt;Lenovo&lt;/link&gt;" height="600" border="0" width="120"></a>
+</div>
+
+<!--
+<iframe src="http://rcm.amazon.com/e/cm?t=yolinux-20&o=1&p=14&l=bn1&mode=pc-hardware&browse=172455&fc1=000000&lt1=_blank&lc1=3366FF&bg1=C0C0C0&f=ifr" marginwidth="0" marginheight="0" width="160" height="600" border="0" frameborder="0" style="border:none;" scrolling="no"></iframe>
+-->
+<p>
+</p>
+<hr>
+<p>
+</p>
+
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div id="footer">
+<table background="LinuxTutorialInitProcess_archivos/footer_pattern.png" bgcolor="#646664" cellpadding="4" width="100%">
+<tbody>
+<tr>
+<td valign="top">
+<font color="#ffcc33" size="-1">
+<b>
+<a class="footer" href="http://www.yolinux.com/">YoLinux.com Home Page</a>
+<br>
+<a class="footer" href="http://www.yolinux.com/TUTORIALS/">YoLinux Tutorial Index</a> |
+<a class="footer" href="http://www.yolinux.com/YoLinux-Terms.html">Terms</a>
+<br>
+<a class="footer" href="http://www.yolinux.com/privacy.html">Privacy Policy</a> |
+<a class="footer" href="http://www.yolinux.com/YoLinux-Advertising.html">Advertise with us</a> | 
+<a class="footer" href="http://www.yolinux.com/YoLinuxEmailForm.html">Feedback Form</a> |
+<br>
+Unauthorized copying or redistribution prohibited.
+</b>
+</font>
+</td>
+<td valign="bottom" align="center">
+   <script src="LinuxTutorialInitProcess_archivos/hostedbadge.htm"></script><iframe id="iframe-stmblpn-widget-1" src="LinuxTutorialInitProcess_archivos/a.htm" style="overflow: hidden; margin: 0pt; padding: 0pt; border: 0pt none;" allowtransparency="true" frameborder="0" height="60" scrolling="no" width="50"></iframe> <script type="text/javascript">   (function() {     var li = document.createElement('script'); li.type = 'text/javascript'; li.async = true;     li.src = window.location.protocol + '//platform.stumbleupon.com/1/widgets.js';     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(li, s);   })(); </script>
+</td>
+<td valign="bottom" align="center">
+<!-- Place this tag where you want the +1 button to render -->
+<div style="height: 60px; width: 50px; display: inline-block; text-indent: 0pt; margin: 0pt; padding: 0pt; background: none repeat scroll 0% 0% transparent; border-style: none; float: none; line-height: normal; font-size: 1px; vertical-align: baseline;" id="___plusone_1"><iframe allowtransparency="true" hspace="0" id="I2_1331176739102" marginheight="0" marginwidth="0" name="I2_1331176739102" src="LinuxTutorialInitProcess_archivos/fastbutton_002.htm" style="position: static; left: 0pt; top: 0pt; width: 50px; margin: 0px; border-style: none; visibility: visible; height: 60px;" tabindex="0" vspace="0" title="+1" frameborder="0" scrolling="no" width="100%"></iframe></div>
+</td>
+<td valign="bottom" align="center">
+<script src="LinuxTutorialInitProcess_archivos/buttons.js" type="text/javascript"></script>
+<span class="db-wrapper db-clear db-medium"><span><span class="db-container db-submit"><span class="db-body db-medium"><span class="db-count">0</span><span class="db-copy">diggs</span><a class="db-anchor">digg</a></span></span></span></span>
+</td>
+<td valign="bottom" align="center">
+<p>
+</p>
+<!-- AddThis Button BEGIN -->
+<a href="http://www.addthis.com/bookmark.php?v=250&amp;pub=yolinux" onmouseover="return addthis_open(this, '', '[URL]', '[TITLE]')" onmouseout="addthis_close()" onclick="return addthis_sendto()"><img src="LinuxTutorialInitProcess_archivos/lg-bookmark-en.gif" alt="Bookmark and Share" style="border: 0pt none;" height="16" width="125"></a>
+<script type="text/javascript" src="LinuxTutorialInitProcess_archivos/addthis_widget.js">
+</script>
+<!-- AddThis Button END -->
+</td>
+<td valign="top">
+<div align="right">
+<script type="text/javascript"><!--
+google_ad_client = "pub-8567479315106986";
+/* 234x60, created 4/23/10 */
+google_ad_slot = "8214196957";
+google_ad_width = 234;
+google_ad_height = 60;
+//-->
+</script>
+<script type="text/javascript" src="LinuxTutorialInitProcess_archivos/show_ads.js">
+</script><ins style="display:inline-table;border:none;height:60px;margin:0;padding:0;position:relative;visibility:visible;width:234px"><ins id="aswift_2_anchor" style="display:block;border:none;height:60px;margin:0;padding:0;position:relative;visibility:visible;width:234px"><iframe allowtransparency="true" hspace="0" marginwidth="0" marginheight="0" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){i+='.call';setTimeout(h,0)}else if(h.match){i+='.nav';w.location.replace(h)}s.log&amp;&amp;s.log.push(i)}" vspace="0" id="aswift_2" name="aswift_2" style="left: 0pt; position: absolute; top: 0pt;" frameborder="0" height="60" scrolling="no" width="234"></iframe></ins></ins>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+</p>
+
+<small>Copyright © 2001 - 2012 by <i>Greg Ippolito</i></small>
+<!-- Start Quantcast tag -->
+<script type="text/javascript">
+  var _qevents = _qevents || [];
+
+  (function() {
+   var elem = document.createElement('script');
+
+   elem.src = (document.location.protocol == "https:" ? "https://secure" : "http://edge") + ".quantserve.com/quant.js";
+   elem.async = true;
+   elem.type = "text/javascript";
+   var scpt = document.getElementsByTagName('script')[0];
+   scpt.parentNode.insertBefore(elem, scpt);  
+  })();
+</script>
+<script type="text/javascript">
+_qevents.push( { qacct:"p-ebIBcaVUngFBQ"} );
+</script>
+<noscript>
+<div style="display: none;"><img src="//pixel.quantserve.com/pixel/p-ebIBcaVUngFBQ.gif" height="1" width="1" alt="Quantcast"/></div>
+</noscript>
+<!-- End Quantcast tag -->
+
+
+<!-- Start Google +1 tag -->
+<!-- Place this tag in your head or just before your close body tag -->
+<script gapi_processed="true" type="text/javascript" src="LinuxTutorialInitProcess_archivos/plusone.js"></script>
+<!-- End Google +1 tag -->
+
+
+<!-- Start Google Analytics tag -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script src="LinuxTutorialInitProcess_archivos/ga.js" type="text/javascript"></script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3317450-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<!-- End Google Analytics tag -->
+
+
+
+
+</body></html>
