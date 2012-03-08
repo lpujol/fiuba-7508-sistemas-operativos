@@ -1,0 +1,13 @@
+function submitCJ10846000X593(formId, url) {
+   var s = "";
+   if (url != null) {
+      s = "<form id=\"" + formId + "\" method=\"post\" action=\"http://www.dpbolvw.net/click-s\" target=\"_top\">\r\n<input type=\"hidden\" name=\"aid\" value=\"10846000\"/>\r\n<input type=\"hidden\" name=\"pid\" value=\"5446021\"/><input type=\"hidden\" name=\"url\" value=\"" + url + "\"/></form>";
+   } else {
+      s = "<form id=\"" + formId + "\" method=\"post\" action=\"http://www.dpbolvw.net/click-s\" target=\"_top\">\r\n<input type=\"hidden\" name=\"aid\" value=\"10846000\"/>\r\n<input type=\"hidden\" name=\"pid\" value=\"5446021\"/></form>";
+   }
+   var x = document.createElement("div");
+   x.innerHTML = s;
+   document.getElementsByTagName("body")[0].appendChild(x);
+   document.getElementById(formId).submit();
+}
+document.write("<a href=\"javascript:submitCJ10846000X593(\'CJ10846000X593\',null);\"><img src=\"http://www.yceml.net/0816/10846000-10.jpg\" width=\"120\" height=\"600\" alt=\"<link>Lenovo</link>\" border=\"0\"/></a>");
